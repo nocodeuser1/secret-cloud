@@ -22,7 +22,7 @@ Anyone who opens it enters a first and last name once. From then on every highli
 | `docs/REVIEW-LAYER-SPEC.md` | how the review layer behaves and the page contract it relies on |
 | `docs/REVIEW-GUIDE.md` | how to read the notes and votes back out of Supabase |
 | `supabase/migrations/` | the schema and row-level security for the notes tables |
-| `dev/` | a test page for the review layer and a render check script |
+| `dev/` | `build-page.mjs` (renders `index.html` from `plan.json`), `render-check.mjs` (verifies they agree), and `engine-test.html` (a bare page for testing the review layer) |
 
 ## Where the notes live
 
@@ -30,7 +30,13 @@ Supabase project `ad-labs`, tables `secret_cloud_notes`, `secret_cloud_stances`,
 
 ## Editing the plan
 
-Edit copy in `index.html` (and mirror it in `content/plan.json`). Keep every `data-block` id as it is; notes are anchored to them. Add new paragraphs with new ids. Run `node dev/render-check.mjs` to confirm the JSON and the page still agree.
+`index.html` is generated. Edit copy in `content/plan.json`, then run:
+
+```bash
+node dev/build-page.mjs && node dev/render-check.mjs
+```
+
+Keep every block `id` as it is; notes are anchored to them. Add new paragraphs with new ids. Layout and microcopy (diagram labels, captions, stance titles) live in `dev/build-page.mjs`. Mirror copy changes in `content/PLAN.md`.
 
 ## Local preview
 

@@ -16,9 +16,15 @@ const plan = JSON.parse(readFileSync(path.join(root, "content", "plan.json"), "u
 const esc = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const strip = (html) => String(html).replace(/<[^>]+>/g, "");
+// Attribute text: tags removed and entities decoded, so esc() escapes once.
+const ENTITIES = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'" };
+const plain = (html) => strip(html).replace(/&(?:amp|lt|gt|quot|#39);/g, (m) => ENTITIES[m]);
 
 // Eyebrows that really are stamps (per the brief's list).
-const STAMP_EYEBROWS = new Set(["RABBIT TRAIL", "GROUNDED", "EASTER EGG", "DROP 001"]);
+const STAMP_EYEBROWS = new Set(["RABBIT TRAIL", "RABBIT TRAILS", "GROUNDED", "EASTER EGG", "DROP 001"]);
+
+// The one h3 after which trail ideas are h4 (the leave-alone group).
+const LEAVE_HEADING_ID = "trails-leave-h3";
 
 function longDate(iso) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -87,7 +93,7 @@ const DIAGRAMS = {
   <text x="592" y="164" class="d-label">band account</text>
   <text x="592" y="204" class="d-label">QR invite</text>
   <text x="592" y="244" class="d-label">reward</text>
-  <!-- small ring marks in each circle: the map and the engine they share -->
+  <!-- a small mark in each circle: rings for the walks, a pin for the shows -->
   <use href="#rings-sym" x="236" y="214" width="30" height="30" class="d-c-blue"/>
   <use href="#g-pin" x="447" y="212" width="16" height="22" class="d-c-pink"/>
 </svg>`,
@@ -120,7 +126,7 @@ const DIAGRAMS = {
   <!-- trailhead sign -->
   <path d="M90 300 L90 318" fill="none" class="d-ink" stroke-width="2"/>
   <rect x="82" y="284" width="16" height="16" class="d-fill-paper d-ink" stroke-width="1.5"/>
-  <rect x="86" y="288" width="8" height="8" class="d-fill-ink"/>
+  <path d="M86 289.5 H94 M86 293 H94 M86 296.5 H91" fill="none" class="d-ink" stroke-width="1.2" stroke-linecap="round"/>
   <text x="104" y="282" class="d-label">trailhead sign</text>
   <!-- the walk -->
   <path d="M128 318 C190 324 240 318 262 308 S300 268 322 250 S400 212 470 176 S540 134 556 126" fill="none" class="d-blue" stroke-width="2" stroke-dasharray="5 7" stroke-linecap="round"/>
@@ -144,9 +150,12 @@ const DIAGRAMS = {
 </svg>`,
 };
 
+// Diagrams that start scrolled to their middle when a phone has to scroll them.
+const CENTER_START = new Set(["rings", "walk"]);
+
 const CAPTIONS = {
   rings: "A drop seen from above: quiet at the outer ring, loud at the inner, and off to one side an easter egg on a radius tight enough that you have to walk up to it.",
-  "two-sides": "Two sides, one thing underneath. The map, the audio engine and the archive are shared; the product keeps them apart.",
+  "two-sides": "Two sides, one thing underneath. Both feed the same regional archive.",
   walk: "The walk as I imagined it: off the gravel path toward the pad, under the hackberry, up the rise to where the mix lines up, then to the stone.",
 };
 
@@ -160,7 +169,7 @@ function renderBlock(b, ctx) {
     case "h3": {
       let out = `<h3 data-block="${b.id}">${esc(b.text)}</h3>`;
       if (b.stance) out += `\n${stance(b.stance, b.stanceTitle || b.text)}`;
-      if (ctx.section.id === "trails") ctx.afterLeaveHeading = true;
+      if (b.id === LEAVE_HEADING_ID) ctx.afterLeaveHeading = true;
       return out;
     }
 
@@ -177,7 +186,7 @@ function renderBlock(b, ctx) {
 
     case "diagram":
       return `<figure class="spread diagram" data-block="${b.id}">` +
-        `<div class="diagram-inner">${DIAGRAMS[b.name]()}\n</div>` +
+        `<div class="diagram-inner"${CENTER_START.has(b.name) ? ' data-start="center"' : ""}>${DIAGRAMS[b.name]()}\n</div>` +
         `<figcaption>${esc(CAPTIONS[b.name])}</figcaption></figure>`;
 
     case "formula":
@@ -195,7 +204,7 @@ function renderBlock(b, ctx) {
       <span class="size" title="${esc(b.size)} is ${esc(sizeWord)}"><span class="vh">size </span>${esc(b.size)}</span>${leave ? `\n      <span class="stamp stamp-pink">Leave it</span>` : ""}
     </div>
     <div class="idea-body"><p>${b.html}</p></div>
-    <p class="fit"><span class="fit-label">Why it fits</span>${esc(b.fit)}</p>${leave ? "" : `\n    ${stance(b.stance, `Trail ${b.letter}: ${b.title}`)}`}
+    <p class="fit"><span class="fit-label">${leave ? "Why I'd leave it" : "Why it fits"}</span>${esc(b.fit)}</p>${leave ? "" : `\n    ${stance(b.stance, `Trail ${b.letter}: ${b.title}`)}`}
   </div>
 </article>`;
     }
@@ -224,7 +233,7 @@ function renderBlock(b, ctx) {
   <span class="q-n">${String(b.n).padStart(2, "0")}</span>
   <div class="q-main">
     <p class="q-text">${b.html}</p>
-    ${stance(b.stance, `Q${b.n}: ${strip(b.html)}`)}
+    ${stance(b.stance, `Q${b.n}: ${plain(b.html)}`)}
   </div>
 </li>`;
 
@@ -260,7 +269,7 @@ function renderBlocks(section) {
 // ---------------------------------------------------------------- sections
 
 function renderSection(s) {
-  const plainTitle = strip(s.title);
+  const plainTitle = plain(s.title);
   const eyebrow = STAMP_EYEBROWS.has(s.eyebrow)
     ? `<p class="eyebrow"><span class="stamp">${esc(s.eyebrow)}</span></p>`
     : `<p class="eyebrow">${esc(s.eyebrow)}</p>`;
@@ -335,6 +344,55 @@ const heroRings = `<svg class="hero-rings" viewBox="0 0 320 320" width="100%" ro
   </g>
 </svg>`;
 
+// A small page script, inline at the end of body (before config.js). It marks
+// which edge of each sideways scroller still has more to show (site.css fades
+// that edge), opens the rings and the walk centred on phones, and makes the
+// section links glide only for short hops. No dependencies, no innerHTML.
+const PAGE_SCRIPT = `(function () {
+  "use strict";
+  var scrollers = Array.prototype.slice.call(document.querySelectorAll(".bar-nav, .diagram-inner"));
+  function edges(el) {
+    var max = el.scrollWidth - el.clientWidth;
+    var x = el.scrollLeft;
+    el.classList.toggle("fits", max <= 1);
+    el.classList.toggle("more-l", max > 1 && x > 1);
+    el.classList.toggle("more-r", max > 1 && x < max - 1);
+  }
+  function update() { scrollers.forEach(edges); }
+  scrollers.forEach(function (el) {
+    if (el.getAttribute("data-start") === "center") el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    el.addEventListener("scroll", function () { edges(el); }, { passive: true });
+  });
+  update();
+  window.addEventListener("resize", update);
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(update);
+    scrollers.forEach(function (el) {
+      ro.observe(el);
+      if (el.firstElementChild) ro.observe(el.firstElementChild);
+    });
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+
+  var nav = document.querySelector(".bar-nav");
+  if (!nav) return;
+  nav.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    var id = a ? a.getAttribute("href").slice(1) : "";
+    var target = id ? document.getElementById(id) : null;
+    if (!target) return;
+    e.preventDefault();
+    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var near = Math.abs(target.getBoundingClientRect().top) < 3 * window.innerHeight;
+    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    try { target.focus({ preventScroll: true }); } catch (err) { /* focus is a courtesy */ }
+    // "auto" is an instant jump: the page sets no scroll-behavior
+    target.scrollIntoView({ behavior: near && !still ? "smooth" : "auto", block: "start" });
+    if (location.hash !== "#" + id) history.pushState(null, "", location.href.split("#")[0] + "#" + id);
+  });
+})();`;
+
 const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -370,8 +428,8 @@ ${symbols}
   <main id="main">
     <div class="hero">
       <div class="hero-text">
-        <p class="hero-wordmark">${esc(meta.title)}</p>
-        ${misreg("h1", esc(meta.tagline), ` id="hero-title"`)}
+        <h1 class="hero-wordmark">${esc(meta.title)}</h1>
+        ${misreg("p", esc(meta.tagline), ` id="hero-title"`)}
         <p class="dek">${esc(meta.dek)}</p>
         <aside class="about" aria-label="About this page">
           <p>${esc(meta.about)}</p>
@@ -385,11 +443,14 @@ ${plan.sections.map(renderSection).join("\n\n")}
   </main>
 
   <footer class="foot">
-    <p>${esc(meta.title)} · a plan, not a promise · notes are read before anything is built</p>
+    <p>${esc(meta.title)} · a plan before the build · notes are read before anything is built</p>
     <p><a href="https://github.com/nocodeuser1/secret-cloud">Source and schema on GitHub</a></p>
   </footer>
 </div>
 
+<script>
+${PAGE_SCRIPT}
+</script>
 <script defer src="assets/config.js"></script>
 <script defer src="assets/review.js"></script>
 </body>

@@ -35,6 +35,10 @@
   --grain-blend: multiply;
   --grain-opacity: .07;
   --bar-h: 3.25rem;
+  /* small mono labels: ink-soft on light paper (pink and moss fall under AA
+     at this size), the inks themselves on dark paper */
+  --label-pink: var(--ink-soft);
+  --label-moss: var(--ink-soft);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,6 +59,8 @@
     --riso-blend: screen;
     --grain-blend: screen;
     --grain-opacity: .06;
+    --label-pink: var(--riso-pink);
+    --label-moss: var(--moss);
   }
 }
 
@@ -75,6 +81,8 @@
   --riso-blend: screen;
   --grain-blend: screen;
   --grain-opacity: .06;
+  --label-pink: var(--riso-pink);
+  --label-moss: var(--moss);
 }
 
 /* --------------------------------------------------------------------------
@@ -84,7 +92,6 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
 }
 
 body {
@@ -236,6 +243,8 @@ svg { overflow: visible; }
 .bar-nav ul {
   display: flex;
   justify-content: center;
+  width: max-content;
+  min-width: 100%;
   gap: .1rem;
   margin: 0;
   padding: 0;
@@ -269,6 +278,26 @@ svg { overflow: visible; }
   .bar-nav a { padding-left: .5em; padding-right: .5em; }
   .bar-nav li:first-child a { padding-left: 0; }
 }
+@media (max-width: 480px) {
+  .bar-nav a { font-size: .68rem; letter-spacing: .08em; }
+}
+
+/* sideways scrollers (this nav row, the diagrams on phones) fade the edge that
+   still has more to show; the inline page script sets .more-l and .more-r.
+   A mask reads only alpha, so the opaque stop is a token. */
+.bar-nav.more-l,
+.bar-nav.more-r,
+.diagram-inner.more-l,
+.diagram-inner.more-r {
+  --fade-l: 0px;
+  --fade-r: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent, var(--ink) var(--fade-l), var(--ink) calc(100% - var(--fade-r)), transparent);
+          mask-image: linear-gradient(to right, transparent, var(--ink) var(--fade-l), var(--ink) calc(100% - var(--fade-r)), transparent);
+}
+.bar-nav.more-l { --fade-l: 1.75rem; }
+.bar-nav.more-r { --fade-r: 1.75rem; }
+.diagram-inner.more-l { --fade-l: 3rem; }
+.diagram-inner.more-r { --fade-r: 3rem; }
 
 /* --------------------------------------------------------------------------
    6. Type helpers
@@ -385,7 +414,7 @@ svg { overflow: visible; }
   color: var(--riso-blue);
 }
 
-.hero h1 {
+.hero .display {
   font-size: clamp(2.8rem, 9vw, 7rem);
   line-height: 1.0;
   letter-spacing: -.025em;
@@ -422,7 +451,6 @@ svg { overflow: visible; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-rings .ring { animation: none; }
-  html { scroll-behavior: auto; }
 }
 
 .about {
@@ -463,6 +491,7 @@ main { display: block; }
   width: min(100%, var(--spread));
   justify-self: center;
 }
+.sec[tabindex="-1"]:focus { outline: none; }
 @media (max-width: 719px) {
   .sec { scroll-margin-top: calc(var(--bar-h) + env(safe-area-inset-top, 0px) + 2.75rem); }
 }
@@ -485,7 +514,8 @@ main { display: block; }
   margin: 0 0 1.15rem;
   text-wrap: pretty;
 }
-.sec h3 {
+.sec h3,
+.sec h4.idea-title {
   font-family: var(--font-display);
   font-size: 1.6rem;
   font-weight: 500;
@@ -605,6 +635,17 @@ main { display: block; }
 @media (max-width: 639px) {
   .diagram-inner { overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; padding-bottom: .25rem; }
   .diagram svg { min-width: 36rem; }
+  .diagram figcaption::after {
+    content: "Swipe sideways to see it all";
+    content: "Swipe sideways to see it all" / "";
+    display: block;
+    margin-top: .45rem;
+    font-size: .68rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .diagram-inner.fits + figcaption::after { content: none; }
 }
 .diagram figcaption {
   max-width: 60ch;
@@ -679,7 +720,7 @@ main { display: block; }
   gap: .5rem .9rem;
   margin: .25rem 0 .6rem;
 }
-.sec .idea-title {
+.sec .idea-head .idea-title {
   margin: 0;
   font-size: 1.55rem;
 }
@@ -721,7 +762,7 @@ main { display: block; }
 .idea-leave .idea-letter { color: var(--ink-soft); }
 .idea-leave .idea-body,
 .idea-leave .fit { color: var(--ink-soft); }
-.idea-leave .fit-label { color: var(--riso-pink); }
+.idea-leave .fit-label { color: var(--label-pink); }
 .idea-leave .stamp { margin-left: .1rem; }
 
 @media (max-width: 480px) {
@@ -790,13 +831,13 @@ main { display: block; }
 .when {
   display: inline-block;
   padding: .22em .75em .18em;
-  border: 1.5px solid currentColor;
+  border: 1.5px solid var(--moss);
   border-radius: 999px;
   font-family: var(--font-mono);
   font-size: .72rem;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--moss);
+  color: var(--label-moss);
   white-space: nowrap;
 }
 .phase-body {
@@ -829,9 +870,11 @@ main { display: block; }
   font-size: .68rem;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: var(--moss);
+  color: var(--label-moss);
 }
-.phase-meta .risk dt { color: var(--riso-pink); }
+.phase-meta .risk dt { color: var(--label-pink); }
+.phase-meta .deliverable { border-left-color: var(--moss); }
+.phase-meta .risk { border-left-color: var(--riso-pink); }
 .phase-meta dd { margin: 0; }
 .phase .stance { margin-top: 1rem; margin-bottom: 0; }
 

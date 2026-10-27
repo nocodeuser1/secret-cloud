@@ -24,7 +24,9 @@
   --sc-scrim: rgba(28, 27, 46, 0.28);
   --sc-gate-scrim: rgba(237, 235, 227, 0.72);
   --sc-selection: rgba(45, 79, 216, 0.22);
-  --sc-danger: #b8322f;
+  --sc-danger: #9c2a27;
+  /* pressed Yes: moss deepened with ink so white text reaches AA; dark keeps plain moss (see overrides) */
+  --sc-moss-deep: color-mix(in srgb, var(--sc-moss) 78%, var(--sc-ink));
   --sc-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --sc-radius: 10px;
   --sc-cut: 255px 15px 225px 15px / 15px 225px 15px 255px;
@@ -45,6 +47,7 @@
   outline: 2px solid var(--sc-blue);
   outline-offset: 2px;
 }
+/* A focused mark gets the blue ring only; the pink fill belongs to .sc-mark--hot / .sc-flash (open or just jumped to). */
 mark.sc-mark:focus-visible {
   outline: 2px solid var(--riso-blue, #2d4fd8);
   outline-offset: 2px;
@@ -194,7 +197,7 @@ mark.sc-mark:focus-visible {
   border-radius: 999px;
   padding: 0.1em 0.5em;
 }
-.sc-tag--orphan { color: var(--sc-pink); border-color: var(--sc-pink); text-transform: none; letter-spacing: 0.02em; }
+.sc-tag--orphan { color: var(--sc-ink-soft); border-color: var(--sc-pink); text-transform: none; letter-spacing: 0.02em; }
 .sc-empty {
   margin: 0.5em 0;
   color: var(--sc-ink-soft);
@@ -294,7 +297,16 @@ mark.sc-mark--hot {
 
 /* ------------------------------------------------------------------ gate */
 
-:root.sc-gate-open {
+:root.sc-gate-open,
+:root.sc-lock {
+  overflow: hidden;
+}
+/* iOS ignores overflow: hidden on the root, so the body is pinned at the saved scroll position (top set from JS). */
+:root.sc-lock--fixed body {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
   overflow: hidden;
 }
 
@@ -310,6 +322,8 @@ mark.sc-mark--hot {
   -webkit-backdrop-filter: blur(7px) saturate(0.9);
   backdrop-filter: blur(7px) saturate(0.9);
   overflow-y: auto;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 .sc-gate-card {
   position: relative;
@@ -317,6 +331,8 @@ mark.sc-mark--hot {
   max-width: 560px;
   max-height: 100%;
   overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
   padding: 28px 28px 24px;
   background: var(--sc-paper-2);
   color: var(--sc-ink);
@@ -628,6 +644,7 @@ mark.sc-mark--hot {
   max-height: 85vh;
   max-height: 85dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   border-radius: 18px 18px 0 0;
   border-bottom: 0;
@@ -667,13 +684,37 @@ mark.sc-mark--hot {
   letter-spacing: 0.03em;
   color: var(--sc-ink-soft);
 }
-.sc-replies { margin-top: 6px; max-height: 40vh; overflow-y: auto; }
+.sc-replies { margin-top: 6px; max-height: 40vh; overflow-y: auto; overscroll-behavior: contain; }
 .sc-reply-box { margin-top: 12px; }
 .sc-textarea--reply { font-size: 1rem; }
 
 /* ------------------------------------------------------------------ section links and general box */
 
-.sc-section-link-wrap { margin: 0.25em 0 1.25em; }
+.sc-section-link-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0.25em 0 1.25em;
+}
+.sc-section-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.1em 0.65em;
+  border: 1px solid var(--sc-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sc-ink-soft);
+  font-family: var(--sc-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.sc-section-count:hover { border-color: var(--sc-blue); color: var(--sc-blue); }
+.sc-section-count[hidden] { display: none; }
 .sc-section-link {
   display: inline-flex;
   align-items: center;
@@ -803,6 +844,9 @@ mark.sc-mark--hot {
 .sc-stance-btn[aria-pressed="true"] { color: #fff; }
 .sc-stance-btn[aria-pressed="true"]::before { background: currentColor; }
 .sc-stance-btn--yes[aria-pressed="true"] { background: var(--sc-moss); border-color: var(--sc-moss); }
+@supports (background: color-mix(in srgb, red 50%, blue)) {
+  .sc-stance-btn--yes[aria-pressed="true"] { background: var(--sc-moss-deep); border-color: var(--sc-moss-deep); }
+}
 .sc-stance-btn--maybe[aria-pressed="true"] { background: var(--sc-ink-soft); border-color: var(--sc-ink-soft); }
 .sc-stance-btn--cut[aria-pressed="true"] { background: var(--sc-pink); border-color: var(--sc-pink); color: var(--sc-ink); }
 .sc-stance-tally {
@@ -908,6 +952,7 @@ mark.sc-mark--hot {
 .sc-drawer-body {
   flex: 1 1 auto;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 10px 18px 20px;
   -webkit-overflow-scrolling: touch;
 }
@@ -965,6 +1010,10 @@ mark.sc-mark--hot {
 }
 .sc-toast--error { background: var(--sc-pink); color: var(--sc-ink); }
 .sc-toast--out { opacity: 0; transform: translateY(6px); }
+@media (max-width: 639.98px) {
+  /* above the Notes button (and level with the pill bar), so a toast never hides it */
+  .sc-toasts { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); }
+}
 
 /* ------------------------------------------------------------------ keyframes */
 
@@ -990,6 +1039,7 @@ mark.sc-mark--hot {
     --sc-gate-scrim: rgba(21, 20, 31, 0.72);
     --sc-selection: rgba(138, 160, 255, 0.3);
     --sc-danger: #ff8a86;
+    --sc-moss-deep: var(--sc-moss);
   }
   :root:not([data-theme="light"]) mark.sc-mark { mix-blend-mode: normal; }
   :root:not([data-theme="light"]) mark.sc-mark--pending { background: rgba(138, 160, 255, 0.3); }
@@ -1005,6 +1055,7 @@ mark.sc-mark--hot {
   --sc-gate-scrim: rgba(21, 20, 31, 0.72);
   --sc-selection: rgba(138, 160, 255, 0.3);
   --sc-danger: #ff8a86;
+  --sc-moss-deep: var(--sc-moss);
 }
 :root[data-theme="dark"] mark.sc-mark { mix-blend-mode: normal; }
 :root[data-theme="dark"] mark.sc-mark--pending { background: rgba(138, 160, 255, 0.3); }

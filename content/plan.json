@@ -48,7 +48,7 @@
         {
           "type": "p",
           "id": "origin-p-1",
-          "html": "It started on a phone call between the two of you. The idea came from Israel's bandmate: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated."
+          "html": "It started on a phone call between the two of you. I have grouped what was said by topic, in my own order. The idea came from Israel's bandmate: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated."
         },
         {
           "type": "p",
@@ -96,12 +96,17 @@
         {
           "type": "p",
           "id": "origin-p-7",
-          "html": "What you agreed is two sides of one thing. The first is a walk-in sound experience you wander into and choose your own adventure. The second is secret live shows run from a band account. Separate in the product, woven together underneath: one map, one audio engine, one archive."
+          "html": "What you agreed is two sides of one thing. The first is a walk-in sound experience you wander into and choose your own adventure. The second is secret live shows run from a band account."
         },
         {
           "type": "diagram",
           "id": "origin-diagram-two-sides",
           "name": "two-sides"
+        },
+        {
+          "type": "p",
+          "id": "origin-p-7b",
+          "html": "The band account came with a note on how the two fit: separate in the product, with the functionality woven together. My addition: underneath, I would share one map, one audio engine and one archive."
         },
         {
           "type": "p",
@@ -111,7 +116,7 @@
         {
           "type": "p",
           "id": "origin-p-9",
-          "html": "The mission filter, in your words:"
+          "html": "The mission filter. The first line is in your words, and the rest is my paraphrase:"
         },
         {
           "type": "callout",
@@ -148,12 +153,12 @@
         {
           "type": "p",
           "id": "vision-pillar-1-p-1",
-          "html": "A drop is one piece of audio placed at a spot. It has a radius, say thirty feet, a decibel level at the outer ring and another at the inner ring. Fifty loops in one vibe across a park, and the space is curated. You need no map. You follow your ears."
+          "html": "A drop is one piece of audio placed at a spot. It has a radius, say thirty feet, a decibel level at the outer ring and another at the inner ring. Fifty loops in one vibe across a park, and the space is curated. You could need no map at all, and follow your ears."
         },
         {
           "type": "p",
           "id": "vision-pillar-1-p-2",
-          "html": "A soundscape is Israel's layer on top. Each instrument's gain is tied to a location. There is a perfect spot where the mix lines up the way it sounds on the album, in stereo. Walk toward the rock where the violin was played and the violin gets louder. It stays simple: louder as you approach. True 3D audio is a later trail. Instruments show as symbols on the map. Only soundscapes get this, so they stay special. The live jams and worship sessions are content too."
+          "html": "A soundscape is Israel's layer on top. Each instrument's gain is tied to a location. There is a perfect spot where the mix lines up the way it sounds on the album, in stereo. Walk toward the rock where the violin was played and the violin gets louder. It stays simple: louder as you approach. It is not true 3D audio. Instruments show as symbols on the map. Only soundscapes get this, so they stay special. The live jams and worship sessions are content too."
         },
         {
           "type": "diagram",
@@ -170,12 +175,12 @@
         {
           "type": "p",
           "id": "vision-pillar-2-p-1",
-          "html": "Put a very tight radius on one special object. A stone on top of a hill. People notice it from the path and wonder what that stone is saying. They walk up, and they hear something only there."
+          "html": "Put a very tight radius on one special object. A stone on top of a hill. People notice it and wonder what that stone is saying. They walk up, and they hear something only there."
         },
         {
           "type": "p",
           "id": "vision-pillar-2-p-2",
-          "html": "Those tight drops are where the quiet things go: Bible verses, prophetic words, life spoken over someone. A ministry Israel was part of used to write hundreds of prophetic words a few times a year. The group could write its own. The stone says it, to whoever climbs the hill."
+          "html": "Those tight drops could be where the quiet things go: Bible verses, prophetic words, life spoken over someone. A ministry Israel was part of used to write hundreds of prophetic words a few times a year. The group could write its own. The stone says it, to whoever climbs the hill."
         },
         {
           "type": "h3",
@@ -192,7 +197,7 @@
         {
           "type": "p",
           "id": "vision-pillar-3-p-2",
-          "html": "Inside the radius during the show, they can enter an app experience with the band. Two ideas came up: letting the crowd alter the effects, which Israel already called a probable disaster with many people, or visuals on loop that match the vibe of that area, generated monthly with a few hours of AI video work. There is a reward for showing up that nobody else gets, like a recording of that live set. Follow the band in the app and get notified each month."
+          "html": "Inside the radius during the show, they can enter an app experience with the band. There were two ideas: letting the crowd alter the effects, which came up on the call as a probable disaster with many people, or visuals on loop that match the vibe of that area, generated monthly with a few hours of AI video work. There is a reward for showing up that nobody else gets, like a recording of that live set. Follow the band in the app and get notified each month."
         },
         {
           "type": "h3",
@@ -204,13 +209,13 @@
         {
           "type": "p",
           "id": "vision-pillar-4-p-1",
-          "html": "A listener can reply to whoever set up the soundscape. Nothing in the app announces itself as religious. So a reply is just a reply. And when someone stands at the perfect spot and feels the presence of God, their testimony comes in the same way. Israel's words:"
+          "html": "A listener can reply to whoever set up the soundscape. Nothing in the app announces itself as religious. So a reply is just a reply. And when someone feels the presence of God, their testimony comes in the same way."
         },
         {
           "type": "quote",
           "id": "vision-pillar-4-quote",
           "html": "It's all under the cover.",
-          "cite": "Israel"
+          "cite": "on the call"
         },
         {
           "type": "p",
@@ -257,7 +262,7 @@
         {
           "type": "p",
           "id": "vision-walk-p-2",
-          "html": "There is a sign zip-tied to the post by the trailhead. Small, hand-printed, a square code in the corner. I scan it. The screen shows one line and a ring on a map. Earbuds in, phone in my pocket. I do not look at it again for a while."
+          "html": "There is a plain printed sign zip-tied to the post by the trailhead. Small, with the name and a short link on it. I type the link into my phone. The screen shows one line. Earbuds in, phone in my pocket. I do not look at it again for a while."
         },
         {
           "type": "p",
@@ -323,12 +328,12 @@
       "kind": "trails",
       "eyebrow": "RABBIT TRAIL",
       "title": "Additions and <em>rabbit trails</em>",
-      "dek": "None of this was said on the call. Twelve ideas to argue with, and three I would leave alone.",
+      "dek": "The ideas below are mine; some build on things said on the call. Twelve to argue with, and three I would leave alone.",
       "blocks": [
         {
           "type": "p",
           "id": "trails-intro-p",
-          "html": "These are my additions, for the two of you and the group to argue with. Each one says why it fits what you said and carries a size: S is days, M is weeks, L is a season. Vote on every one."
+          "html": "These are my additions, for the two of you and the group to argue with. Each one says why it fits what you said and carries a size: S is days, M is weeks, L is a season. Vote on each of the twelve."
         },
         {
           "type": "idea",
@@ -434,7 +439,7 @@
           "id": "trails-idea-j",
           "letter": "J",
           "title": "One iPad in the woods",
-          "html": "A kit for the woods. One iPad runs the loops and replaces the amps with amp modeling. The Microcosm's granular job goes to an app on the same iPad, one less box and one less cable. A small bus-powered interface, guitar and a vocal mic into it. A battery PA, six hours, backpack size. A blanket. One person carries it all in. After we test it in Guthrie I would post the signal chain and app list as the kit any curator can copy.",
+          "html": "Israel's iPad rig, written down as a kit: one iPad runs the loops and replaces the amps with amp modeling. The Microcosm's granular job goes to an app on the same iPad, one less box and one less cable. I would add a small bus-powered interface, with guitar and a vocal mic into it. A battery PA, six hours, backpack size. A blanket. One person carries it all in. After we test it in Guthrie, I would post the signal chain and app list as the kit any curator can copy.",
           "fit": "The band in the woods, with nothing in the way.",
           "size": "S",
           "stance": "trail-j",
@@ -483,7 +488,7 @@
           "id": "trails-idea-y",
           "letter": "Y",
           "title": "Crowd-controlled effects at a show",
-          "html": "Twelve people tapping a filter sweep at once sounds like twelve people tapping a filter sweep, and Israel already called it a probable disaster. It also turns every face in the radius down toward a screen.",
+          "html": "Twelve people tapping a filter sweep at once sounds like twelve people tapping a filter sweep. Crowd-controlled effects came up on the call as a probable disaster with many people. It also turns every face in the radius down toward a screen.",
           "fit": "The phone should get out of the way, and this puts it back.",
           "size": "S",
           "stance": "trail-y",
@@ -532,7 +537,7 @@
         {
           "type": "p",
           "id": "steer-p-5",
-          "html": "Ship small. Walk the park every month, with whoever is new. Change one thing each time. Read every reply. When someone writes back that they felt the presence of God at the stone, that is the only signal I would trust. Let the testimonies tell you what to build next."
+          "html": "Ship small. Walk the park every month, with whoever is new. Change one thing each time. Read every reply. When someone writes back that they felt the presence of God at the stone, that is the signal I would trust most. Let the testimonies tell you what to build next."
         }
       ]
     },
@@ -546,7 +551,7 @@
         {
           "type": "p",
           "id": "grounded-intro-p",
-          "html": "What is actually possible, in what order, and with what. Everything here comes from the call, except where I say my addition."
+          "html": "What is actually possible, in what order, and with what. The shape comes from the call: drops with a radius and two levels, the perfect spot, the QR code and the band account, the reward, monthly drops, the archive, the heat map and replies. The rest is mine: the order, the weeks on each phase, the stack, the data model, the math, the costs and the platform choices."
         },
         {
           "type": "phase",
@@ -565,7 +570,7 @@
           "n": 1,
           "title": "The real walk",
           "when": "6 to 10 weeks",
-          "html": "A native iOS app in Swift and SwiftUI. CoreLocation with when-in-use permission plus the background location mode, so the app keeps reading your position after you lock the phone and pocket it. AVAudioEngine with the audio background mode, so the loops keep playing. Beside it, a curator tool as a web page: a map (MapLibre with OpenStreetMap tiles, or Apple MapKit JS), drop a pin, set the radius and the two levels, upload the audio. The backend is Supabase: Postgres with PostGIS for which drops are near me, Storage for audio, Auth for curators. Apple expects a clear in-app reason for background location before the prompt, and real audio playing in the background. Battery: an hour of GPS at walking pace is fine, a whole afternoon is not.",
+          "html": "My addition: I picked every tool named in this phase. A native iOS app in Swift and SwiftUI. CoreLocation with when-in-use permission plus the background location mode, so the app keeps reading your position after you lock the phone and pocket it. AVAudioEngine with the audio background mode, so the loops keep playing. Beside it, a curator tool as a web page: a map (MapLibre with OpenStreetMap tiles, or Apple MapKit JS), drop a pin, set the radius and the two levels, upload the audio. The backend is Supabase: Postgres with PostGIS for region queries and later the archive and the heat map, Storage for audio, Auth for curators. The near-me check stays on the phone: it downloads the cloud's drop list and measures each distance itself. Apple expects a clear in-app reason for background location before the prompt, and real audio playing in the background. Battery: an hour of GPS at walking pace is fine, a whole afternoon is not.",
           "deliverable": "A TestFlight build the group walks with, phone in pocket, plus a curator page to place drops.",
           "risk": "App Store review asks us to justify background location, and we lose a week to it.",
           "stance": "phase-1"
@@ -576,7 +581,7 @@
           "n": 2,
           "title": "Secret shows",
           "when": "4 to 6 weeks",
-          "html": "Band accounts. The app generates a QR code for a show and the band posts it. Scanning opens the app if you have it, or a page that gets you to it. A show has a time window, a spot and a radius. When your phone is inside the radius during the window, you get an arrival check-in: one tap, I'm here. That tap unlocks the in-show screen, and later the reward, for example a recording of that set. Directions to the radius hand off to Apple Maps (my addition). Follow a band and get a push notification each month through APNs, which needs a small sender on Supabase.",
+          "html": "Band accounts. The app generates a QR code for a show and the band posts it. Scanning opens the app if you have it, or a page that gets you to it. A show has a time window, a spot and a radius. When your phone is inside the radius during the window, it gets the invitation to join. My addition: you accept with one tap, I'm here. That tap unlocks the in-show screen, and later the reward, for example a recording of that set. Directions to the radius hand off to Apple Maps (my addition). Follow a band and get a push each month. The push goes through APNs, which needs a small sender on Supabase (my addition).",
           "deliverable": "A band can schedule a show, print the code, and the people who stood in the radius get the recording.",
           "risk": "People scan the code at home, expect the show to be in the app, and find only a time and a direction.",
           "stance": "phase-2"
@@ -587,7 +592,7 @@
           "n": 3,
           "title": "The cloud grows",
           "when": "ongoing",
-          "html": "A replies and testimonies inbox for curators, where every reply waits for the curator before anyone else hears it. Approving one is a single tap. Monthly drop scheduling: a soundscape gets a publish date, so the same park wakes up new each month without anyone tapping deploy at midnight. A regional archive: every show adds its place and its recording, and the heat map for travelers is drawn from show locations, never from people. Then Android, a second app in Kotlin with its own rules for background location and its own store review. It shares the backend, so nothing on the curator side changes.",
+          "html": "A replies and testimonies inbox for curators. My addition: every reply waits for the curator before anyone else hears it, and approving one is a single tap. Monthly drop scheduling: a soundscape gets a publish date, so the same park wakes up new each month without anyone tapping deploy at midnight. A regional archive: every show adds its place and its recording, and the heat map for travelers is drawn from show locations, never from people. Then Android (my addition): a second app in Kotlin with its own rules for background location and its own store review. It shares the backend, so nothing on the curator side changes.",
           "deliverable": "A curator plans the next three months of a park from the inbox, and the first Android walker joins.",
           "risk": "The heat map starts to look like a count, and counts are what you said you do not want.",
           "stance": "phase-3"
@@ -695,11 +700,11 @@
             },
             {
               "id": "grounded-realities-ul-3",
-              "html": "Replies are moderated. Nobody else hears a reply until the curator approves it."
+              "html": "Replies are moderated (my addition). Nobody else hears a reply until the curator approves it."
             },
             {
               "id": "grounded-realities-ul-4",
-              "html": "Privacy. We store only what the experience needs. Location never leaves the phone except for check-ins the person taps. No location history, no analytics that follow a person."
+              "html": "Privacy (my addition). We store only what the experience needs. The phone downloads the cloud's drop list and measures distance on the device. All it sends is the check-in a person taps, and the anonymous return signal from trail L if we build it. No location history leaves the phone, and no analytics follow a person."
             },
             {
               "id": "grounded-realities-ul-5",
@@ -730,7 +735,7 @@
             },
             {
               "id": "grounded-costs-ul-2",
-              "html": "Supabase: if the org you already use is on Pro, this fits inside it as a schema and adds nothing. Its own project would add about 10 USD a month of compute. Verify on the billing page."
+              "html": "Supabase: the org you already use is on Pro, so this fits inside it as a schema and adds nothing. A project of its own would add about 10 USD a month."
             },
             {
               "id": "grounded-costs-ul-3",
@@ -777,7 +782,7 @@
             },
             {
               "id": "grounded-need-ul-5",
-              "html": "Whether iOS-only is fine for a year, and who in the group carries Android."
+              "html": "Whether iOS-only is fine for a year, and who in the group carries Android (my addition)."
             },
             {
               "id": "grounded-need-ul-6",

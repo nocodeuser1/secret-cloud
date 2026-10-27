@@ -1,5 +1,7 @@
 # The Secret Cloud
 
+Note: this is the text of the plan site. The site also carries three diagrams: two sides of one thing, a drop seen from above, and the walk through the park.
+
 *A sound you can walk into*
 
 A walk-in sound experience and secret live shows, planned out loud for the group before anything is built.
@@ -12,7 +14,7 @@ This page is the plan I drew from your October 2026 call, with what you two said
 
 *One phone call in October, two ideas stacked on top of each other, and a name.*
 
-It started on a phone call between the two of you. The idea came from Israel's bandmate: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated.
+It started on a phone call between the two of you. I have grouped what was said by topic, in my own order. The idea came from Israel's bandmate: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated.
 
 Then the easter eggs: a very tight radius on a special object, like a stone on top of a hill, so people wonder what that stone is saying, walk up, and hear something only there. Then monthly drops, so people keep coming back. The image that sells it: walking off the path into a little bit of forest because you heard something, and someone else walking in too.
 
@@ -33,11 +35,13 @@ And the answer back:
 
 The name landed on the same call. The Secret Cloud. It is the name of the group's secret club, and the thing lives in the digital cloud. You called the parallels mind-blowing. You liked that you would be subverting the medium, using phones to get people outside and into a real place.
 
-What you agreed is two sides of one thing. The first is a walk-in sound experience you wander into and choose your own adventure. The second is secret live shows run from a band account. Separate in the product, woven together underneath: one map, one audio engine, one archive.
+What you agreed is two sides of one thing. The first is a walk-in sound experience you wander into and choose your own adventure. The second is secret live shows run from a band account.
+
+The band account came with a note on how the two fit: separate in the product, with the functionality woven together. My addition: underneath, I would share one map, one audio engine and one archive.
 
 The phone tension came up too. It is getting taboo to hold your phone during an experience; people are sick of it. And still, they find the thing through an app. The point is to get out and walk around. You both landed in the same place: the phone should lead you there and then get out of the way.
 
-The mission filter, in your words:
+The mission filter. The first line is in your words, and the rest is my paraphrase:
 
 > **THE FILTER**  
 > **Find the right person, not the most people.** Shows will be intimate and rarely repeat. Depth over reach. If someone follows, they come back next month.
@@ -52,28 +56,28 @@ Vote on each pillar, and leave a note where you would say it differently.
 
 ### Drops and soundscapes
 
-A drop is one piece of audio placed at a spot. It has a radius, say thirty feet, a decibel level at the outer ring and another at the inner ring. Fifty loops in one vibe across a park, and the space is curated. You need no map. You follow your ears.
+A drop is one piece of audio placed at a spot. It has a radius, say thirty feet, a decibel level at the outer ring and another at the inner ring. Fifty loops in one vibe across a park, and the space is curated. You could need no map at all, and follow your ears.
 
-A soundscape is Israel's layer on top. Each instrument's gain is tied to a location. There is a perfect spot where the mix lines up the way it sounds on the album, in stereo. Walk toward the rock where the violin was played and the violin gets louder. It stays simple: louder as you approach. True 3D audio is a later trail. Instruments show as symbols on the map. Only soundscapes get this, so they stay special. The live jams and worship sessions are content too.
+A soundscape is Israel's layer on top. Each instrument's gain is tied to a location. There is a perfect spot where the mix lines up the way it sounds on the album, in stereo. Walk toward the rock where the violin was played and the violin gets louder. It stays simple: louder as you approach. It is not true 3D audio. Instruments show as symbols on the map. Only soundscapes get this, so they stay special. The live jams and worship sessions are content too.
 
 ### Easter eggs
 
-Put a very tight radius on one special object. A stone on top of a hill. People notice it from the path and wonder what that stone is saying. They walk up, and they hear something only there.
+Put a very tight radius on one special object. A stone on top of a hill. People notice it and wonder what that stone is saying. They walk up, and they hear something only there.
 
-Those tight drops are where the quiet things go: Bible verses, prophetic words, life spoken over someone. A ministry Israel was part of used to write hundreds of prophetic words a few times a year. The group could write its own. The stone says it, to whoever climbs the hill.
+Those tight drops could be where the quiet things go: Bible verses, prophetic words, life spoken over someone. A ministry Israel was part of used to write hundreds of prophetic words a few times a year. The group could write its own. The stone says it, to whoever climbs the hill.
 
 ### Secret shows from a band account
 
 The app generates a QR code for the band. You post it around: flyers, signs, online. Scanning it is the invite. When someone shows up, their phone gets an invitation to join the event locally, with turn-by-turn directions to the radius. A scavenger hunt for music. Live performances only.
 
-Inside the radius during the show, they can enter an app experience with the band. Two ideas came up: letting the crowd alter the effects, which Israel already called a probable disaster with many people, or visuals on loop that match the vibe of that area, generated monthly with a few hours of AI video work. There is a reward for showing up that nobody else gets, like a recording of that live set. Follow the band in the app and get notified each month.
+Inside the radius during the show, they can enter an app experience with the band. There were two ideas: letting the crowd alter the effects, which came up on the call as a probable disaster with many people, or visuals on loop that match the vibe of that area, generated monthly with a few hours of AI video work. There is a reward for showing up that nobody else gets, like a recording of that live set. Follow the band in the app and get notified each month.
 
 ### Replies and testimonies
 
-A listener can reply to whoever set up the soundscape. Nothing in the app announces itself as religious. So a reply is just a reply. And when someone stands at the perfect spot and feels the presence of God, their testimony comes in the same way. Israel's words:
+A listener can reply to whoever set up the soundscape. Nothing in the app announces itself as religious. So a reply is just a reply. And when someone feels the presence of God, their testimony comes in the same way.
 
 > It's all under the cover.  
-> Israel
+> on the call
 
 That is why the cover matters. The public app never preaches. The place does the talking, and the curators choose what to say. My gloss: lead with a label and the people you are looking for stay on the path. Under the cover, they walk off it, hear something, and write back.
 
@@ -89,7 +93,7 @@ My addition: nobody described a walk on the call. I imagined one from what you s
 
 Saturday, a little after two. The park in Guthrie is mostly empty. A dog barks behind the pavilion, and the wind pushes dry leaves across the path.
 
-There is a sign zip-tied to the post by the trailhead. Small, hand-printed, a square code in the corner. I scan it. The screen shows one line and a ring on a map. Earbuds in, phone in my pocket. I do not look at it again for a while.
+There is a plain printed sign zip-tied to the post by the trailhead. Small, with the name and a short link on it. I type the link into my phone. The screen shows one line. Earbuds in, phone in my pocket. I do not look at it again for a while.
 
 At first there is nothing. Gravel and wind. Then, a few steps on, a pad. Low, slow, one chord that keeps opening. Faint, off to the left. Two steps toward it and it gets a little stronger. Two steps back and it fades. So I leave the path.
 
@@ -112,9 +116,9 @@ Then a branch snaps behind me. Someone in a grey hoodie comes through the same g
 
 ## Additions and *rabbit trails*
 
-*None of this was said on the call. Twelve ideas to argue with, and three I would leave alone.*
+*The ideas below are mine; some build on things said on the call. Twelve to argue with, and three I would leave alone.*
 
-These are my additions, for the two of you and the group to argue with. Each one says why it fits what you said and carries a size: S is days, M is weeks, L is a season. Vote on every one.
+These are my additions, for the two of you and the group to argue with. Each one says why it fits what you said and carries a size: S is days, M is weeks, L is a season. Vote on each of the twelve.
 
 ### A. Walk with your ears
 
@@ -181,7 +185,7 @@ Three ways to do the in-show experience without anyone staring at a phone. A slo
 
 ### J. One iPad in the woods
 
-A kit for the woods. One iPad runs the loops and replaces the amps with amp modeling. The Microcosm's granular job goes to an app on the same iPad, one less box and one less cable. A small bus-powered interface, guitar and a vocal mic into it. A battery PA, six hours, backpack size. A blanket. One person carries it all in. After we test it in Guthrie I would post the signal chain and app list as the kit any curator can copy.
+Israel's iPad rig, written down as a kit: one iPad runs the loops and replaces the amps with amp modeling. The Microcosm's granular job goes to an app on the same iPad, one less box and one less cable. I would add a small bus-powered interface, with guitar and a vocal mic into it. A battery PA, six hours, backpack size. A blanket. One person carries it all in. After we test it in Guthrie, I would post the signal chain and app list as the kit any curator can copy.
 
 **Why it fits:** The band in the woods, with nothing in the way.  
 **Size:** S
@@ -211,7 +215,7 @@ A page that plays the park to a couch is easy to build, and it undoes the whole 
 
 #### Y. Crowd-controlled effects at a show
 
-Twelve people tapping a filter sweep at once sounds like twelve people tapping a filter sweep, and Israel already called it a probable disaster. It also turns every face in the radius down toward a screen.
+Twelve people tapping a filter sweep at once sounds like twelve people tapping a filter sweep. Crowd-controlled effects came up on the call as a probable disaster with many people. It also turns every face in the radius down toward a screen.
 
 **Why I'd leave it:** The phone should get out of the way, and this puts it back.  
 **Size:** S
@@ -235,41 +239,41 @@ The bigger frame, my addition: the product is a home for curated listening place
 
 Two rules I would hold to. The public app never preaches; the place does the talking, and the curators choose what it says, which keeps the prophetic words and the worship exactly where you put them. And curators own their content: their loops, their replies, their testimonies, and the right to take any of it down.
 
-Ship small. Walk the park every month, with whoever is new. Change one thing each time. Read every reply. When someone writes back that they felt the presence of God at the stone, that is the only signal I would trust. Let the testimonies tell you what to build next.
+Ship small. Walk the park every month, with whoever is new. Change one thing each time. Read every reply. When someone writes back that they felt the presence of God at the stone, that is the signal I would trust most. Let the testimonies tell you what to build next.
 
 ## What is possible, *in order*
 
 *Four phases, the data, the math, and the parts of the phone that will fight us.*
 
-What is actually possible, in what order, and with what. Everything here comes from the call, except where I say my addition.
+What is actually possible, in what order, and with what. The shape comes from the call: drops with a radius and two levels, the perfect spot, the QR code and the band account, the reward, monthly drops, the archive, the heat map and replies. The rest is mine: the order, the weeks on each phase, the stack, the data model, the math, the costs and the platform choices.
 
 ### Phase 0, "Prove the feeling" (2 to 3 weeks)
 
 A web page, opened on a phone in the park in Guthrie, with five to ten of your loops placed at spots on the grass. The page reads your position with the browser's Geolocation API and plays the loops with the Web Audio API. Gain follows distance. The screen stays on through the Screen Wake Lock API. iOS Safari stops a web page's audio and location once the screen locks or Safari goes to the background, and no setting changes this. So Phase 0 is for walking with the phone in your hand, to feel what thirty feet means on real ground. On the first walk I also want to check (my addition) whether the mute switch silences Web Audio, and how long the first GPS fix takes under trees.
 
 **Deliverable:** A shareable link the group walks with.  
-**What could go wrong:** GPS under the Guthrie trees is rough enough that the loops feel random, and the radii have to grow.
+**Risk:** GPS under the Guthrie trees is rough enough that the loops feel random, and the radii have to grow.
 
 ### Phase 1, "The real walk" (6 to 10 weeks)
 
-A native iOS app in Swift and SwiftUI. CoreLocation with when-in-use permission plus the background location mode, so the app keeps reading your position after you lock the phone and pocket it. AVAudioEngine with the audio background mode, so the loops keep playing. Beside it, a curator tool as a web page: a map (MapLibre with OpenStreetMap tiles, or Apple MapKit JS), drop a pin, set the radius and the two levels, upload the audio. The backend is Supabase: Postgres with PostGIS for which drops are near me, Storage for audio, Auth for curators. Apple expects a clear in-app reason for background location before the prompt, and real audio playing in the background. Battery: an hour of GPS at walking pace is fine, a whole afternoon is not.
+My addition: I picked every tool named in this phase. A native iOS app in Swift and SwiftUI. CoreLocation with when-in-use permission plus the background location mode, so the app keeps reading your position after you lock the phone and pocket it. AVAudioEngine with the audio background mode, so the loops keep playing. Beside it, a curator tool as a web page: a map (MapLibre with OpenStreetMap tiles, or Apple MapKit JS), drop a pin, set the radius and the two levels, upload the audio. The backend is Supabase: Postgres with PostGIS for region queries and later the archive and the heat map, Storage for audio, Auth for curators. The near-me check stays on the phone: it downloads the cloud's drop list and measures each distance itself. Apple expects a clear in-app reason for background location before the prompt, and real audio playing in the background. Battery: an hour of GPS at walking pace is fine, a whole afternoon is not.
 
 **Deliverable:** A TestFlight build the group walks with, phone in pocket, plus a curator page to place drops.  
-**What could go wrong:** App Store review asks us to justify background location, and we lose a week to it.
+**Risk:** App Store review asks us to justify background location, and we lose a week to it.
 
 ### Phase 2, "Secret shows" (4 to 6 weeks)
 
-Band accounts. The app generates a QR code for a show and the band posts it. Scanning opens the app if you have it, or a page that gets you to it. A show has a time window, a spot and a radius. When your phone is inside the radius during the window, you get an arrival check-in: one tap, I'm here. That tap unlocks the in-show screen, and later the reward, for example a recording of that set. Directions to the radius hand off to Apple Maps (my addition). Follow a band and get a push notification each month through APNs, which needs a small sender on Supabase.
+Band accounts. The app generates a QR code for a show and the band posts it. Scanning opens the app if you have it, or a page that gets you to it. A show has a time window, a spot and a radius. When your phone is inside the radius during the window, it gets the invitation to join. My addition: you accept with one tap, I'm here. That tap unlocks the in-show screen, and later the reward, for example a recording of that set. Directions to the radius hand off to Apple Maps (my addition). Follow a band and get a push each month. The push goes through APNs, which needs a small sender on Supabase (my addition).
 
 **Deliverable:** A band can schedule a show, print the code, and the people who stood in the radius get the recording.  
-**What could go wrong:** People scan the code at home, expect the show to be in the app, and find only a time and a direction.
+**Risk:** People scan the code at home, expect the show to be in the app, and find only a time and a direction.
 
 ### Phase 3, "The cloud grows" (ongoing)
 
-A replies and testimonies inbox for curators, where every reply waits for the curator before anyone else hears it. Approving one is a single tap. Monthly drop scheduling: a soundscape gets a publish date, so the same park wakes up new each month without anyone tapping deploy at midnight. A regional archive: every show adds its place and its recording, and the heat map for travelers is drawn from show locations, never from people. Then Android, a second app in Kotlin with its own rules for background location and its own store review. It shares the backend, so nothing on the curator side changes.
+A replies and testimonies inbox for curators. My addition: every reply waits for the curator before anyone else hears it, and approving one is a single tap. Monthly drop scheduling: a soundscape gets a publish date, so the same park wakes up new each month without anyone tapping deploy at midnight. A regional archive: every show adds its place and its recording, and the heat map for travelers is drawn from show locations, never from people. Then Android (my addition): a second app in Kotlin with its own rules for background location and its own store review. It shares the backend, so nothing on the curator side changes.
 
 **Deliverable:** A curator plans the next three months of a park from the inbox, and the first Android walker joins.  
-**What could go wrong:** The heat map starts to look like a count, and counts are what you said you do not want.
+**Risk:** The heat map starts to look like a count, and counts are what you said you do not want.
 
 ### The data model
 
@@ -306,8 +310,8 @@ Multi-stem soundscapes. Each stem is its own drop around the perfect spot. Stand
 
 - Background audio and location on iOS: native yes, web no.
 - File sizes and offline. Masters stay WAV in Storage. The app downloads AAC at 128 to 192 kbps, about 1 to 1.5 MB a minute, and caches the whole park before you leave Wi-Fi, since the park may have no signal.
-- Replies are moderated. Nobody else hears a reply until the curator approves it.
-- Privacy. We store only what the experience needs. Location never leaves the phone except for check-ins the person taps. No location history, no analytics that follow a person.
+- Replies are moderated (my addition). Nobody else hears a reply until the curator approves it.
+- Privacy (my addition). We store only what the experience needs. The phone downloads the cloud's drop list and measures distance on the device. All it sends is the check-in a person taps, and the anonymous return signal from trail L if we build it. No location history leaves the phone, and no analytics follow a person.
 - The phone-in-hand tension. One tap to begin, then the screen locks and the app keeps going.
 - App Store rules. The background modes must be used for what they say: a plain reason at the prompt, and real sound playing in the background.
 - Radii must fit the ground (my addition). Thirty feet is about 9 m, inside GPS error under trees. Expect 15 to 30 m for loops; keep small radii for open ground.
@@ -315,7 +319,7 @@ Multi-stem soundscapes. Each stem is its own drop around the perfect spot. Stand
 ### What it costs
 
 - Apple Developer Program: 99 USD a year. Whoever owns this account owns the app, so decide that together.
-- Supabase: if the org you already use is on Pro, this fits inside it as a schema and adds nothing. Its own project would add about 10 USD a month of compute. Verify on the billing page.
+- Supabase: the org you already use is on Pro, so this fits inside it as a schema and adds nothing. A project of its own would add about 10 USD a month.
 - Domain: about 15 USD a year.
 - Map tiles: free at this scale.
 - TestFlight: free.
@@ -327,7 +331,7 @@ Multi-stem soundscapes. Each stem is its own drop around the perfect spot. Stand
 - The park, and a rough sketch of where things go. A photo of a hand-drawn map is enough.
 - Confirm the name. If The Secret Cloud holds, I will check the App Store and the domain.
 - Who the first curator is.
-- Whether iOS-only is fine for a year, and who in the group carries Android.
+- Whether iOS-only is fine for a year, and who in the group carries Android (my addition).
 - The one Bible verse or spoken word for the first easter egg, and whose voice reads it.
 - A date to walk the park together.
 - The Apple ID the developer account should live under (my addition).

@@ -433,7 +433,7 @@ ${symbols}
         <p class="dek">${esc(meta.dek)}</p>
         <aside class="about" aria-label="About this page">
           <p>${esc(meta.about)}</p>
-          <p class="about-meta">Written by ${esc(meta.writtenBy)} · ${esc(longDate(meta.date))} · <a href="#marks">How to leave notes</a></p>
+          <p class="about-meta">${meta.writtenBy ? `Written by ${esc(meta.writtenBy)} · ` : "Drafted "}${esc(longDate(meta.date))} · <a href="#marks">How to leave notes</a></p>
         </aside>
       </div>
       ${heroRings}

@@ -3,7 +3,7 @@
     "title": "The Secret Cloud",
     "tagline": "A sound you can walk into",
     "dek": "A walk-in sound experience and secret live shows, planned out loud for the group before anything is built.",
-    "writtenBy": "Claude, your build partner",
+    "writtenBy": "",
     "date": "2026-10-26",
     "about": "This page is the plan I drew from your October 2026 call, with what you two said kept apart from what I added. Every note and vote left here is read before the build starts."
   },
@@ -48,7 +48,7 @@
         {
           "type": "p",
           "id": "origin-p-1",
-          "html": "It started on a phone call between the two of you. I have grouped what was said by topic, in my own order. The idea came from Israel's bandmate: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated."
+          "html": "It started on a phone call between the two of you. I have grouped what was said by topic, in my own order. The idea came from Kellen: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated."
         },
         {
           "type": "p",
@@ -86,7 +86,7 @@
           "type": "quote",
           "id": "origin-quote-3",
           "html": "Follow the white rabbit, only for the kingdom.",
-          "cite": "his bandmate"
+          "cite": "Kellen"
         },
         {
           "type": "p",

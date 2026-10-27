@@ -1,16 +1,16 @@
 # Brainstorm digest — the call that started The Secret Cloud
 
-Condensed from a phone call in October 2026 between Israel and his bandmate (whose original idea this was). This digest is the single source of truth for the plan site. Everything in the site should be traceable to this document or clearly marked as an addition.
+Condensed from a phone call in October 2026 between Israel and Kellen (whose original idea this was). This digest is the single source of truth for the plan site. Everything in the site should be traceable to this document or clearly marked as an addition.
 
 ## Who is talking
 
 - **Israel** — producer/engineer side. Runs an AI phone business, works with iPads for live rigs, thinks in systems. Will drive the build.
-- **The bandmate** — had the original idea. Dreamer, writer, musician (his wife plays violin). Wants it to be "ours", not Israel's or his.
+- **Kellen** — had the original idea. Dreamer, writer, musician (his wife plays violin). Wants it to be "ours", not Israel's or his.
 - The two of them, plus friends, jam and record **worship sessions and loops** together. They want to tell the rest of the group so everyone gets in on it.
 
 The name they landed on: **The Secret Cloud**. It is the name of the group's secret club *and* the thing lives in the digital cloud. They liked that the parallels were "mind-blowing" and that they'd be "subverting the medium" by using phones to get people outside and into a real place.
 
-## The original idea (the bandmate's)
+## The original idea (Kellen's)
 
 1. Collect around **50 audio loops** of varying lengths, all in a similar vibe. You now have 50 MP3s.
 2. Physically go to a place. The running example is **the park in Guthrie**.
@@ -30,9 +30,9 @@ The name they landed on: **The Secret Cloud**. It is the name of the group's sec
   - Ideas for that in-show experience: letting the crowd alter effects (probably a disaster with many people), or **visuals** on loop that match the vibe of that area, generated monthly (a few hours of AI video work per month).
   - **A reward for showing up** that nobody else gets, e.g. a recording of that live set.
   - **Follow** the band in the app and get notified each month.
-- **The phone tension.** The bandmate: it's getting taboo to hold your phone during an experience; people are sick of it. Israel: they still *find* it through an app; the point is to get out and walk around, not stare at the screen. Both agree: the phone should lead you there and then get out of the way.
+- **The phone tension.** Kellen: it's getting taboo to hold your phone during an experience; people are sick of it. Israel: they still *find* it through an app; the point is to get out and walk around, not stare at the screen. Both agree: the phone should lead you there and then get out of the way.
 - **The mission filter.** "Find the right person, not the most people." Shows will be intimate and rare-repeat; depth over reach. If someone follows, they come back next month.
-- **The West Virginia video.** A guy with a PA on a blanket in the woods playing loops from an iPad, and people slowly walking in from different parts of the forest. Israel's version: "we're actually there in worship, and people feel the presence of God because they followed a sign on the street." "God could tell us where to put those signs and the right people would come." The bandmate: "follow the white rabbit, only for the kingdom."
+- **The West Virginia video.** A guy with a PA on a blanket in the woods playing loops from an iPad, and people slowly walking in from different parts of the forest. Israel's version: "we're actually there in worship, and people feel the presence of God because they followed a sign on the street." "God could tell us where to put those signs and the right people would come." Kellen: "follow the white rabbit, only for the kingdom."
 - **Gear.** Low-power is the constraint in the woods. An iPad can replace the amps (amp modeling) and run the whole rig. Israel loves the Microcosm granular pedal (~$400) but wants to do that on the iPad instead of adding cables. Granular effects on acoustic guitar and vocals.
 
 ## What they agreed

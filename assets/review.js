@@ -506,7 +506,7 @@
 
     if (step === 1) {
       card.appendChild(h("h2", { id: "sc-gate-title", class: "sc-gate-title", text: "Before you read" }));
-      card.appendChild(h("p", { class: "sc-gate-why", text: "Your name is stamped on every note and vote you leave, so Claude knows whose it is when the build starts." }));
+      card.appendChild(h("p", { class: "sc-gate-why", text: "Your name is stamped on every note and vote you leave, so it is clear whose it is when the build starts." }));
 
       var firstErr = h("span", { class: "sc-field-error", id: "sc-first-error", role: "alert" });
       var lastErr = h("span", { class: "sc-field-error", id: "sc-last-error", role: "alert" });

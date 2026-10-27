@@ -6,7 +6,7 @@ Note: this is the text of the plan site. The site also carries three diagrams: t
 
 A walk-in sound experience and secret live shows, planned out loud for the group before anything is built.
 
-Written by Claude, your build partner, 2026-10-26.
+Drafted 2026-10-26.
 
 This page is the plan I drew from your October 2026 call, with what you two said kept apart from what I added. Every note and vote left here is read before the build starts.
 
@@ -14,7 +14,7 @@ This page is the plan I drew from your October 2026 call, with what you two said
 
 *One phone call in October, two ideas stacked on top of each other, and a name.*
 
-It started on a phone call between the two of you. I have grouped what was said by topic, in my own order. The idea came from Israel's bandmate: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated.
+It started on a phone call between the two of you. I have grouped what was said by topic, in my own order. The idea came from Kellen: about fifty audio loops in one vibe, placed at spots in a real place like the park in Guthrie, each with a radius and a level at each ring, so that with no map at all you could follow your ears. The space is curated.
 
 Then the easter eggs: a very tight radius on a special object, like a stone on top of a hill, so people wonder what that stone is saying, walk up, and hear something only there. Then monthly drops, so people keep coming back. The image that sells it: walking off the path into a little bit of forest because you heard something, and someone else walking in too.
 
@@ -31,7 +31,7 @@ Then the West Virginia video came up. A guy on a blanket in the woods with a PA 
 And the answer back:
 
 > Follow the white rabbit, only for the kingdom.  
-> his bandmate
+> Kellen
 
 The name landed on the same call. The Secret Cloud. It is the name of the group's secret club, and the thing lives in the digital cloud. You called the parallels mind-blowing. You liked that you would be subverting the medium, using phones to get people outside and into a real place.
 

@@ -39,6 +39,45 @@
      at this size), the inks themselves on dark paper */
   --label-pink: var(--ink-soft);
   --label-moss: var(--ink-soft);
+  /* the near-black and near-white of a phone screen and a black card */
+  --tint-black: #14131C;
+  --tint-white: #FBFAF6;
+
+  /* Mood palettes: four looks, each with a light and a dark set. The page
+     maps them onto the tokens above under html[data-mood] (section 16), and
+     the phone mockups paint their screens from them (section 17). Every
+     set keeps ink, soft ink and accent at 4.5:1 or better on bg and surface
+     (dev/render-check.mjs measures it). */
+  /* riso zine, light */
+  --pal-riso-l-bg: #EDEBE3; --pal-riso-l-surface: #E3E0D5; --pal-riso-l-ink: #1C1B2E; --pal-riso-l-soft: #55536A; --pal-riso-l-line: #C8C5B8;
+  --pal-riso-l-accent: #2D4FD8; --pal-riso-l-accent2: #FF4FA3; --pal-riso-l-hi: #F2C230; --pal-riso-l-moss: #2F8B73;
+  /* riso zine, dark */
+  --pal-riso-d-bg: #15141F; --pal-riso-d-surface: #1E1C2B; --pal-riso-d-ink: #EDE9DE; --pal-riso-d-soft: #B3AFC2; --pal-riso-d-line: #36344C;
+  --pal-riso-d-accent: #8AA0FF; --pal-riso-d-accent2: #FF7CC0; --pal-riso-d-hi: #F7D35A; --pal-riso-d-moss: #5FC9AC;
+
+  /* night walk, light */
+  --pal-night-l-bg: #E9EDE3; --pal-night-l-surface: #DCE3D3; --pal-night-l-ink: #13221B; --pal-night-l-soft: #475950; --pal-night-l-line: #BCC7B5;
+  --pal-night-l-accent: #8A5500; --pal-night-l-accent2: #C4471C; --pal-night-l-hi: #F2B54A; --pal-night-l-moss: #2B6B45;
+  /* night walk, dark */
+  --pal-night-d-bg: #0F1A15; --pal-night-d-surface: #17261F; --pal-night-d-ink: #ECE6D3; --pal-night-d-soft: #A8B5A3; --pal-night-d-line: #2D4237;
+  --pal-night-d-accent: #F2B54A; --pal-night-d-accent2: #FF8A5C; --pal-night-d-hi: #FFD27A; --pal-night-d-moss: #7FC79A;
+
+  /* field kit, light */
+  --pal-field-l-bg: #F4EEDC; --pal-field-l-surface: #EAE2C9; --pal-field-l-ink: #1F1E1A; --pal-field-l-soft: #5A554A; --pal-field-l-line: #CDC3A8;
+  --pal-field-l-accent: #A63A0C; --pal-field-l-accent2: #FF6A1A; --pal-field-l-hi: #F5C400; --pal-field-l-moss: #3E6B48;
+  /* field kit, dark */
+  --pal-field-d-bg: #1A1916; --pal-field-d-surface: #25231D; --pal-field-d-ink: #F1EBDA; --pal-field-d-soft: #B5AD99; --pal-field-d-line: #3B382F;
+  --pal-field-d-accent: #FF8A3D; --pal-field-d-accent2: #FF6A1A; --pal-field-d-hi: #F5C400; --pal-field-d-moss: #86BC92;
+
+  /* kingdom glass, light */
+  --pal-glass-l-bg: #F4EFE2; --pal-glass-l-surface: #E9E1CC; --pal-glass-l-ink: #121A40; --pal-glass-l-soft: #4A4E72; --pal-glass-l-line: #CFC7B0;
+  --pal-glass-l-accent: #7F5A0C; --pal-glass-l-accent2: #B3263E; --pal-glass-l-hi: #E9C46A; --pal-glass-l-moss: #0F6F52;
+  /* kingdom glass, dark */
+  --pal-glass-d-bg: #0E1636; --pal-glass-d-surface: #16204A; --pal-glass-d-ink: #F3EBD8; --pal-glass-d-soft: #BAB6D2; --pal-glass-d-line: #2C3870;
+  --pal-glass-d-accent: #E9C46A; --pal-glass-d-accent2: #F0607A; --pal-glass-d-hi: #F6D88A; --pal-glass-d-moss: #5ED1A8;
+
+  /* the phone's camera cut-out is hardware: near-black in every theme */
+  --phone-island: #0A0A0D;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -61,6 +100,9 @@
     --grain-opacity: .06;
     --label-pink: var(--riso-pink);
     --label-moss: var(--moss);
+    --tint-black: #07070B;
+    --tint-white: #F4F1E8;
+    --phone-island: #050507;
   }
 }
 
@@ -83,6 +125,9 @@
   --grain-opacity: .06;
   --label-pink: var(--riso-pink);
   --label-moss: var(--moss);
+  --tint-black: #07070B;
+  --tint-white: #F4F1E8;
+  --phone-island: #050507;
 }
 
 /* --------------------------------------------------------------------------
@@ -691,6 +736,25 @@ main { display: block; }
 .d-c-moss { color: var(--moss); }
 .d-c-sun { color: var(--sunflower); }
 .d-dim { opacity: .55; }
+.d-fill-soft { fill: var(--ink-soft); fill-opacity: .6; }
+.d-fill-black { fill: var(--tint-black); }
+.d-fill-pink-solid { fill: var(--riso-pink); }
+.d-c-white { color: var(--tint-white); }
+.gs-blue { stop-color: var(--riso-blue); }
+.gs-pink { stop-color: var(--riso-pink); }
+.d-words {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 10px;
+  fill: var(--ink);
+}
+.d-word {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  fill: var(--ink);
+}
 
 /* --------------------------------------------------------------------------
    10. Rabbit trails: ideas lettered A, B, C
@@ -942,3 +1006,640 @@ main { display: block; }
 }
 .foot p { margin: 0; }
 .foot a { color: var(--riso-blue); }
+
+/* small mono "size" chips stay readable on dark paper: solid ink, paper text */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .size { background: var(--sunflower); color: var(--paper); }
+}
+:root[data-theme="dark"] .size { background: var(--sunflower); color: var(--paper); }
+
+/* --------------------------------------------------------------------------
+   15. Design calls: margin sketches for the look, voted on like the rest
+   -------------------------------------------------------------------------- */
+.design {
+  margin: 2.4rem 0 2.6rem;
+  padding: 1.2rem 0 1.4rem;
+  border-top: 1px dashed var(--line);
+  border-bottom: 1px dashed var(--line);
+  scroll-margin-top: calc(var(--bar-h) + env(safe-area-inset-top, 0px) + 1rem);
+}
+@media (max-width: 719px) {
+  .design { scroll-margin-top: calc(var(--bar-h) + env(safe-area-inset-top, 0px) + 3.25rem); }
+}
+.sec .design-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin: 0 0 .6rem;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.design-pencil {
+  width: .95rem;
+  height: .95rem;
+  flex: none;
+  color: var(--accent);
+}
+.sec .design-title {
+  margin: 0 0 .4rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: "SOFT" 80, "WONK" 1;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.sec .design-intro {
+  margin: 0 0 1.3rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.design-opts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem 1.5rem;
+}
+@media (max-width: 479px) {
+  .design-opts { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+}
+.design-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.design-opt > * { max-width: 100%; }
+.design-opt-text { width: 100%; }
+.sec .design-opt-name {
+  margin: .7rem 0 .2rem;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 500;
+  font-variation-settings: "SOFT" 70, "WONK" 1;
+  line-height: 1.25;
+}
+.sec .design-opt-text p {
+  margin: 0;
+  font-size: .98rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.design-try {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  min-height: 34px;
+  margin-top: .7rem;
+  padding: .35em .9em;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.design-try::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+.design-try:hover { border-color: var(--ink); }
+.design-try[aria-pressed="true"] { border-color: var(--riso-blue); color: var(--riso-blue); }
+.design-try[aria-pressed="true"]::before { background: currentColor; }
+.design-try:focus-visible { outline-offset: 2px; border-radius: 999px; }
+.design-opt .stance { width: 100%; margin: .65rem 0 0; }
+.design-opt .stance:empty { margin: 0; }
+
+/* jump links to the design calls, in Your turn */
+.list-jump {
+  margin: .25rem 0 2rem;
+  padding-left: 0;
+  list-style: none;
+}
+.list-jump li {
+  position: relative;
+  margin: 0 0 .45rem;
+  padding-left: 1.6rem;
+}
+.list-jump li::before {
+  content: "";
+  position: absolute;
+  left: .1rem;
+  top: .5em;
+  width: .72rem;
+  height: .72rem;
+  border: 1.5px dashed var(--accent);
+  border-radius: 50%;
+}
+
+/* --------------------------------------------------------------------------
+   16. Moods: "Try it on the page" sets html[data-mood]. Every mood has a light
+   and a dark set and follows the system theme like the original, until the
+   chip's Light / Dark switch pins one on html[data-theme]. "riso" is the
+   original palette, so it needs no block here. These come after both dark
+   blocks so they win at equal or higher specificity.
+   -------------------------------------------------------------------------- */
+:root[data-mood="night-walk"] {
+  color-scheme: light;
+  --paper: var(--pal-night-l-bg);
+  --paper-2: var(--pal-night-l-surface);
+  --ink: var(--pal-night-l-ink);
+  --ink-soft: var(--pal-night-l-soft);
+  --line: var(--pal-night-l-line);
+  --riso-blue: var(--pal-night-l-accent);
+  --riso-pink: var(--pal-night-l-accent2);
+  --sunflower: var(--pal-night-l-hi);
+  --moss: var(--pal-night-l-moss);
+  --mark: rgba(242,181,74,.40);
+  --mark-hot: rgba(196,71,28,.26);
+  --shadow: 0 10px 30px rgba(19,34,27,.14);
+  --riso-blend: multiply;
+  --grain-blend: multiply;
+  --grain-opacity: .07;
+  --label-pink: var(--ink-soft);
+  --label-moss: var(--moss);
+  --tint-black: #0C1410;
+  --tint-white: #F7F8F3;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="night-walk"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: var(--pal-night-d-bg);
+    --paper-2: var(--pal-night-d-surface);
+    --ink: var(--pal-night-d-ink);
+    --ink-soft: var(--pal-night-d-soft);
+    --line: var(--pal-night-d-line);
+    --riso-blue: var(--pal-night-d-accent);
+    --riso-pink: var(--pal-night-d-accent2);
+    --sunflower: var(--pal-night-d-hi);
+    --moss: var(--pal-night-d-moss);
+    --mark: rgba(242,181,74,.26);
+    --mark-hot: rgba(255,138,92,.34);
+    --shadow: 0 10px 30px rgba(0,0,0,.55);
+    --riso-blend: screen;
+    --grain-blend: screen;
+    --grain-opacity: .06;
+    --label-pink: var(--riso-pink);
+    --label-moss: var(--moss);
+    --tint-black: #050906;
+    --tint-white: #F2EFE6;
+  }
+}
+:root[data-mood="night-walk"][data-theme="dark"] {
+  color-scheme: dark;
+  --paper: var(--pal-night-d-bg);
+  --paper-2: var(--pal-night-d-surface);
+  --ink: var(--pal-night-d-ink);
+  --ink-soft: var(--pal-night-d-soft);
+  --line: var(--pal-night-d-line);
+  --riso-blue: var(--pal-night-d-accent);
+  --riso-pink: var(--pal-night-d-accent2);
+  --sunflower: var(--pal-night-d-hi);
+  --moss: var(--pal-night-d-moss);
+  --mark: rgba(242,181,74,.26);
+  --mark-hot: rgba(255,138,92,.34);
+  --shadow: 0 10px 30px rgba(0,0,0,.55);
+  --riso-blend: screen;
+  --grain-blend: screen;
+  --grain-opacity: .06;
+  --label-pink: var(--riso-pink);
+  --label-moss: var(--moss);
+  --tint-black: #050906;
+  --tint-white: #F2EFE6;
+}
+
+:root[data-mood="field-kit"] {
+  color-scheme: light;
+  --paper: var(--pal-field-l-bg);
+  --paper-2: var(--pal-field-l-surface);
+  --ink: var(--pal-field-l-ink);
+  --ink-soft: var(--pal-field-l-soft);
+  --line: var(--pal-field-l-line);
+  --riso-blue: var(--pal-field-l-accent);
+  --riso-pink: var(--pal-field-l-accent2);
+  --sunflower: var(--pal-field-l-hi);
+  --moss: var(--pal-field-l-moss);
+  --mark: rgba(245,196,0,.42);
+  --mark-hot: rgba(255,106,26,.30);
+  --shadow: 0 10px 30px rgba(31,30,26,.16);
+  --riso-blend: multiply;
+  --grain-blend: multiply;
+  --grain-opacity: .07;
+  /* safety orange is too light for small type on cream: labels use rust */
+  --label-pink: var(--riso-blue);
+  --label-moss: var(--moss);
+  --tint-black: #1B1A16;
+  --tint-white: #FBF8EF;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="field-kit"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: var(--pal-field-d-bg);
+    --paper-2: var(--pal-field-d-surface);
+    --ink: var(--pal-field-d-ink);
+    --ink-soft: var(--pal-field-d-soft);
+    --line: var(--pal-field-d-line);
+    --riso-blue: var(--pal-field-d-accent);
+    --riso-pink: var(--pal-field-d-accent2);
+    --sunflower: var(--pal-field-d-hi);
+    --moss: var(--pal-field-d-moss);
+    --mark: rgba(245,196,0,.26);
+    --mark-hot: rgba(255,106,26,.32);
+    --shadow: 0 10px 30px rgba(0,0,0,.55);
+    --riso-blend: screen;
+    --grain-blend: screen;
+    --grain-opacity: .06;
+    --label-pink: var(--riso-pink);
+    --label-moss: var(--moss);
+    --tint-black: #0B0A08;
+    --tint-white: #F4EFE2;
+  }
+}
+:root[data-mood="field-kit"][data-theme="dark"] {
+  color-scheme: dark;
+  --paper: var(--pal-field-d-bg);
+  --paper-2: var(--pal-field-d-surface);
+  --ink: var(--pal-field-d-ink);
+  --ink-soft: var(--pal-field-d-soft);
+  --line: var(--pal-field-d-line);
+  --riso-blue: var(--pal-field-d-accent);
+  --riso-pink: var(--pal-field-d-accent2);
+  --sunflower: var(--pal-field-d-hi);
+  --moss: var(--pal-field-d-moss);
+  --mark: rgba(245,196,0,.26);
+  --mark-hot: rgba(255,106,26,.32);
+  --shadow: 0 10px 30px rgba(0,0,0,.55);
+  --riso-blend: screen;
+  --grain-blend: screen;
+  --grain-opacity: .06;
+  --label-pink: var(--riso-pink);
+  --label-moss: var(--moss);
+  --tint-black: #0B0A08;
+  --tint-white: #F4EFE2;
+}
+
+:root[data-mood="kingdom-glass"] {
+  color-scheme: light;
+  --paper: var(--pal-glass-l-bg);
+  --paper-2: var(--pal-glass-l-surface);
+  --ink: var(--pal-glass-l-ink);
+  --ink-soft: var(--pal-glass-l-soft);
+  --line: var(--pal-glass-l-line);
+  --riso-blue: var(--pal-glass-l-accent);
+  --riso-pink: var(--pal-glass-l-accent2);
+  --sunflower: var(--pal-glass-l-hi);
+  --moss: var(--pal-glass-l-moss);
+  --mark: rgba(233,196,106,.42);
+  --mark-hot: rgba(179,38,62,.24);
+  --shadow: 0 10px 30px rgba(18,26,64,.15);
+  --riso-blend: multiply;
+  --grain-blend: multiply;
+  --grain-opacity: .07;
+  --label-pink: var(--ink-soft);
+  --label-moss: var(--moss);
+  --tint-black: #0B1030;
+  --tint-white: #FBF8F0;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="kingdom-glass"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: var(--pal-glass-d-bg);
+    --paper-2: var(--pal-glass-d-surface);
+    --ink: var(--pal-glass-d-ink);
+    --ink-soft: var(--pal-glass-d-soft);
+    --line: var(--pal-glass-d-line);
+    --riso-blue: var(--pal-glass-d-accent);
+    --riso-pink: var(--pal-glass-d-accent2);
+    --sunflower: var(--pal-glass-d-hi);
+    --moss: var(--pal-glass-d-moss);
+    --mark: rgba(233,196,106,.26);
+    --mark-hot: rgba(240,96,122,.36);
+    --shadow: 0 10px 30px rgba(3,6,20,.6);
+    --riso-blend: screen;
+    --grain-blend: screen;
+    --grain-opacity: .05;
+    --label-pink: var(--riso-pink);
+    --label-moss: var(--moss);
+    --tint-black: #05081A;
+    --tint-white: #F6F1E4;
+  }
+}
+:root[data-mood="kingdom-glass"][data-theme="dark"] {
+  color-scheme: dark;
+  --paper: var(--pal-glass-d-bg);
+  --paper-2: var(--pal-glass-d-surface);
+  --ink: var(--pal-glass-d-ink);
+  --ink-soft: var(--pal-glass-d-soft);
+  --line: var(--pal-glass-d-line);
+  --riso-blue: var(--pal-glass-d-accent);
+  --riso-pink: var(--pal-glass-d-accent2);
+  --sunflower: var(--pal-glass-d-hi);
+  --moss: var(--pal-glass-d-moss);
+  --mark: rgba(233,196,106,.26);
+  --mark-hot: rgba(240,96,122,.36);
+  --shadow: 0 10px 30px rgba(3,6,20,.6);
+  --riso-blend: screen;
+  --grain-blend: screen;
+  --grain-opacity: .05;
+  --label-pink: var(--riso-pink);
+  --label-moss: var(--moss);
+  --tint-black: #05081A;
+  --tint-white: #F6F1E4;
+}
+
+/* night walk: a lantern somewhere up ahead, moss low on the ground */
+:root[data-mood="night-walk"] body::before,
+:root[data-mood="kingdom-glass"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+:root[data-mood="night-walk"] body::before {
+  background:
+    radial-gradient(38rem 28rem at 82% 2%, color-mix(in srgb, var(--sunflower) 16%, transparent), transparent 70%),
+    radial-gradient(44rem 30rem at 6% 104%, color-mix(in srgb, var(--moss) 10%, transparent), transparent 70%);
+}
+:root[data-mood="night-walk"] .hero-rings .rings-ink { color: var(--riso-blue); }
+
+/* field kit: crisp type and mono tape labels */
+:root[data-mood="field-kit"] .display,
+:root[data-mood="field-kit"] .display em { font-variation-settings: "SOFT" 0, "WONK" 0; }
+:root[data-mood="field-kit"] .stamp {
+  border-color: var(--ink);
+  border-radius: 1px;
+  background: var(--ink);
+  color: var(--paper);
+  transform: rotate(-1.2deg);
+}
+:root[data-mood="field-kit"] .stamp-pink {
+  border-color: var(--riso-pink);
+  background: var(--riso-pink);
+  /* dark type on safety orange in both schemes (cream on orange is too faint) */
+  color: var(--tint-black);
+}
+:root[data-mood="field-kit"] .hero-wordmark,
+:root[data-mood="field-kit"] .opener .eyebrow:not(:has(.stamp)),
+:root[data-mood="field-kit"] .sec .design-eyebrow {
+  width: fit-content;
+  padding: .32em .7em .26em;
+  border-radius: 1px;
+  background: var(--ink);
+  color: var(--paper);
+}
+:root[data-mood="field-kit"] .sec .design-eyebrow .design-pencil { color: var(--riso-pink); }
+:root[data-mood="field-kit"] .callout { border-radius: 3px; }
+
+/* kingdom glass: warm light through coloured glass */
+:root[data-mood="kingdom-glass"] body::before {
+  background:
+    radial-gradient(42rem 30rem at 88% -6%, color-mix(in srgb, var(--riso-blue) 18%, transparent), transparent 70%),
+    radial-gradient(34rem 28rem at -8% 38%, color-mix(in srgb, var(--riso-pink) 12%, transparent), transparent 70%),
+    radial-gradient(38rem 30rem at 72% 108%, color-mix(in srgb, var(--moss) 10%, transparent), transparent 70%);
+}
+:root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-1 { stroke: var(--riso-blue); }
+:root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-2 { stroke: var(--moss); }
+:root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-3 { fill: color-mix(in srgb, var(--riso-blue) 14%, transparent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  body { transition: background-color .2s ease, color .2s ease; }
+}
+
+/* the "Previewing" chip: bottom left, clear of the Notes button at bottom right */
+.mood-chip {
+  position: fixed;
+  z-index: 47;
+  left: calc(16px + env(safe-area-inset-left, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  max-width: min(40rem, calc(100vw - 32px - 9.75rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .1rem .55rem;
+  padding: .5rem .9rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 20px;
+  background: var(--paper-2);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .04em;
+  line-height: 1.35;
+}
+.mood-chip[hidden] { display: none; }
+.mood-chip strong { font-weight: 500; }
+.mood-chip-sep { color: var(--ink-soft); }
+.mood-scheme {
+  display: inline-flex;
+  align-items: center;
+  gap: .1rem .4rem;
+}
+.mood-scheme-btn {
+  min-height: 28px;
+  padding: .1rem .5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--riso-blue);
+  text-decoration: underline;
+  text-underline-offset: .2em;
+  cursor: pointer;
+}
+.mood-scheme-btn[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  cursor: default;
+}
+.mood-scheme-btn:focus-visible,
+.mood-back:focus-visible { outline-offset: 1px; }
+.mood-back {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--riso-blue);
+  text-decoration: underline;
+  text-underline-offset: .2em;
+  cursor: pointer;
+}
+/* phones: three rows on purpose, the preview name, the Light / Dark switch,
+   and Back to the original set apart on its own row under a dotted rule */
+@media (max-width: 539px) {
+  .mood-chip { flex-direction: column; align-items: stretch; gap: 0; padding: .4rem .85rem .3rem; }
+  .mood-chip > .mood-chip-sep { display: none; }
+  .mood-scheme { margin-left: -.5rem; }
+  .mood-scheme-btn { min-height: 26px; }
+  .mood-back { min-height: 26px; margin-top: .2rem; border-top: 1px dotted var(--ink-soft); text-align: left; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mood-chip:not([hidden]) { animation: chip-in .25s ease-out; }
+}
+@keyframes chip-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+/* room under the footer for the chip */
+:root[data-mood] .foot { padding-bottom: 6.5rem; }
+
+/* --------------------------------------------------------------------------
+   17. Phone mockups: every design option shows the app on a phone, light and
+   dark side by side. The phones are SVG from dev/phone/ (frame.mjs draws the
+   device, the screens-*.mjs files the screens). A screen paints only with the
+   --s-* properties below, set per phone from one of the eight palettes:
+   ph-pal-<look>-l / -d pins a palette (the look call compares all four), and
+   ph-follow takes the light or dark set of whatever mood the page is wearing.
+   dev/phone/CONTRACT.md lists the classes.
+   -------------------------------------------------------------------------- */
+.phone-pair {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(.6rem, 3vw, 1rem);
+  width: 100%;
+  margin: 0;
+  padding: 1rem .75rem .65rem;
+  background: var(--paper-2);
+  border-radius: 4px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.phone-fig {
+  flex: 0 1 var(--phone-w, 7.75rem);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+}
+/* wider screens: bigger phones so the words on the screens can be read */
+@media (min-width: 900px) {
+  .phone-pair { --phone-w: 9.75rem; }
+}
+.ph {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.phone-cap {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  letter-spacing: .16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* the device, in page ink */
+.ph-body { fill: var(--ink); }
+.ph-btn { fill: var(--ink); opacity: .75; }
+.ph-rim { stroke: var(--ink); opacity: .9; }
+.ph-island { fill: var(--phone-island); }
+.ph-home { opacity: .85; }
+
+/* the eight palettes, pinned or following the page's mood */
+.ph-pal-riso-l,
+:root:not([data-mood]) .ph-follow.ph-light,
+:root[data-mood="riso"] .ph-follow.ph-light {
+  --s-bg: var(--pal-riso-l-bg); --s-surface: var(--pal-riso-l-surface); --s-ink: var(--pal-riso-l-ink); --s-soft: var(--pal-riso-l-soft); --s-line: var(--pal-riso-l-line);
+  --s-accent: var(--pal-riso-l-accent); --s-accent2: var(--pal-riso-l-accent2); --s-hi: var(--pal-riso-l-hi); --s-moss: var(--pal-riso-l-moss);
+}
+.ph-pal-riso-d,
+:root:not([data-mood]) .ph-follow.ph-dark,
+:root[data-mood="riso"] .ph-follow.ph-dark {
+  --s-bg: var(--pal-riso-d-bg); --s-surface: var(--pal-riso-d-surface); --s-ink: var(--pal-riso-d-ink); --s-soft: var(--pal-riso-d-soft); --s-line: var(--pal-riso-d-line);
+  --s-accent: var(--pal-riso-d-accent); --s-accent2: var(--pal-riso-d-accent2); --s-hi: var(--pal-riso-d-hi); --s-moss: var(--pal-riso-d-moss);
+}
+.ph-pal-night-l,
+:root[data-mood="night-walk"] .ph-follow.ph-light {
+  --s-bg: var(--pal-night-l-bg); --s-surface: var(--pal-night-l-surface); --s-ink: var(--pal-night-l-ink); --s-soft: var(--pal-night-l-soft); --s-line: var(--pal-night-l-line);
+  --s-accent: var(--pal-night-l-accent); --s-accent2: var(--pal-night-l-accent2); --s-hi: var(--pal-night-l-hi); --s-moss: var(--pal-night-l-moss);
+}
+.ph-pal-night-d,
+:root[data-mood="night-walk"] .ph-follow.ph-dark {
+  --s-bg: var(--pal-night-d-bg); --s-surface: var(--pal-night-d-surface); --s-ink: var(--pal-night-d-ink); --s-soft: var(--pal-night-d-soft); --s-line: var(--pal-night-d-line);
+  --s-accent: var(--pal-night-d-accent); --s-accent2: var(--pal-night-d-accent2); --s-hi: var(--pal-night-d-hi); --s-moss: var(--pal-night-d-moss);
+}
+.ph-pal-field-l,
+:root[data-mood="field-kit"] .ph-follow.ph-light {
+  --s-bg: var(--pal-field-l-bg); --s-surface: var(--pal-field-l-surface); --s-ink: var(--pal-field-l-ink); --s-soft: var(--pal-field-l-soft); --s-line: var(--pal-field-l-line);
+  --s-accent: var(--pal-field-l-accent); --s-accent2: var(--pal-field-l-accent2); --s-hi: var(--pal-field-l-hi); --s-moss: var(--pal-field-l-moss);
+}
+.ph-pal-field-d,
+:root[data-mood="field-kit"] .ph-follow.ph-dark {
+  --s-bg: var(--pal-field-d-bg); --s-surface: var(--pal-field-d-surface); --s-ink: var(--pal-field-d-ink); --s-soft: var(--pal-field-d-soft); --s-line: var(--pal-field-d-line);
+  --s-accent: var(--pal-field-d-accent); --s-accent2: var(--pal-field-d-accent2); --s-hi: var(--pal-field-d-hi); --s-moss: var(--pal-field-d-moss);
+}
+.ph-pal-glass-l,
+:root[data-mood="kingdom-glass"] .ph-follow.ph-light {
+  --s-bg: var(--pal-glass-l-bg); --s-surface: var(--pal-glass-l-surface); --s-ink: var(--pal-glass-l-ink); --s-soft: var(--pal-glass-l-soft); --s-line: var(--pal-glass-l-line);
+  --s-accent: var(--pal-glass-l-accent); --s-accent2: var(--pal-glass-l-accent2); --s-hi: var(--pal-glass-l-hi); --s-moss: var(--pal-glass-l-moss);
+}
+.ph-pal-glass-d,
+:root[data-mood="kingdom-glass"] .ph-follow.ph-dark {
+  --s-bg: var(--pal-glass-d-bg); --s-surface: var(--pal-glass-d-surface); --s-ink: var(--pal-glass-d-ink); --s-soft: var(--pal-glass-d-soft); --s-line: var(--pal-glass-d-line);
+  --s-accent: var(--pal-glass-d-accent); --s-accent2: var(--pal-glass-d-accent2); --s-hi: var(--pal-glass-d-hi); --s-moss: var(--pal-glass-d-moss);
+}
+
+/* screen paint: sf-* fills, ss-* strokes, sg-* gradient stops */
+.ph .sf-bg { fill: var(--s-bg); }
+.ph .sf-surface { fill: var(--s-surface); }
+.ph .sf-ink { fill: var(--s-ink); }
+.ph .sf-soft { fill: var(--s-soft); }
+.ph .sf-line { fill: var(--s-line); }
+.ph .sf-accent { fill: var(--s-accent); }
+.ph .sf-accent2 { fill: var(--s-accent2); }
+.ph .sf-hi { fill: var(--s-hi); }
+.ph .sf-moss { fill: var(--s-moss); }
+.ph .ss-bg { stroke: var(--s-bg); }
+.ph .ss-surface { stroke: var(--s-surface); }
+.ph .ss-ink { stroke: var(--s-ink); }
+.ph .ss-soft { stroke: var(--s-soft); }
+.ph .ss-line { stroke: var(--s-line); }
+.ph .ss-accent { stroke: var(--s-accent); }
+.ph .ss-accent2 { stroke: var(--s-accent2); }
+.ph .ss-hi { stroke: var(--s-hi); }
+.ph .ss-moss { stroke: var(--s-moss); }
+.ph .sg-bg { stop-color: var(--s-bg); }
+.ph .sg-surface { stop-color: var(--s-surface); }
+.ph .sg-ink { stop-color: var(--s-ink); }
+.ph .sg-accent { stop-color: var(--s-accent); }
+.ph .sg-accent2 { stop-color: var(--s-accent2); }
+.ph .sg-hi { stop-color: var(--s-hi); }
+.ph .sg-moss { stop-color: var(--s-moss); }
+
+/* screen type: the page's three faces; sizes come from font-size attributes */
+.ph text { font-kerning: normal; }
+.ph .t-display { font-family: var(--font-display); font-variation-settings: "SOFT" 70, "WONK" 1; }
+.ph .t-body { font-family: var(--font-body); }
+.ph .t-mono { font-family: var(--font-mono); }
+.ph .t-italic { font-style: italic; }
+/* field kit sets its type crisp, on the page and on its screens */
+.ph-pal-field-l .t-display,
+.ph-pal-field-d .t-display,
+:root[data-mood="field-kit"] .ph-follow .t-display { font-variation-settings: "SOFT" 0, "WONK" 0; }
+
+/* the pink layer overprints: multiply on a light screen, screen on a dark one */
+.ph-light .s-blend { mix-blend-mode: multiply; }
+.ph-dark .s-blend { mix-blend-mode: screen; }

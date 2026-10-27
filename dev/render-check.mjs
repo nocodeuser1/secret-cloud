@@ -5,7 +5,8 @@
 // extra, and the page contract the review layer relies on is present.
 // Run: node dev/render-check.mjs   (exit code 1 on any failure)
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,6 +25,10 @@ for (const s of plan.sections) {
   for (const b of s.blocks) {
     blockIds.push(b.id);
     if (b.type === "ul") for (const it of b.items) blockIds.push(it.id);
+    if (b.type === "design") for (const o of b.options) {
+      blockIds.push(o.id);
+      stances.push({ id: o.stance, owner: o.id, design: true });
+    }
     if (b.stance && !(b.type === "idea" && b.leaveAlone)) stances.push({ id: b.stance, owner: b.id });
   }
 }
@@ -58,12 +63,19 @@ for (const id of foundStances.keys()) {
 for (const s of plan.sections) for (const b of s.blocks) {
   if (b.type === "idea" && b.leaveAlone && foundStances.has(b.stance)) fail(`leave-alone idea ${b.id} has a stance mount`);
 }
-// every mount is empty and carries a title
-for (const m of html.matchAll(/<div class="stance" data-stance="([^"]+)" data-stance-title="([^"]*)"><\/div>/g)) {
+// every mount is empty and carries a title; design mounts also carry their labels
+const DESIGN_LABELS = "Love it|Maybe|Not this";
+const MOUNT_RE = /<div class="stance" data-stance="([^"]+)" data-stance-title="([^"]*)"(?: data-stance-labels="([^"]*)")?><\/div>/g;
+for (const m of html.matchAll(MOUNT_RE)) {
   if (!m[2].trim()) fail(`stance "${m[1]}" has an empty data-stance-title`);
+  const isDesign = stances.some((s) => s.id === m[1] && s.design);
+  if (isDesign && m[3] !== DESIGN_LABELS) fail(`design stance "${m[1]}" needs data-stance-labels="${DESIGN_LABELS}"`);
+  if (!isDesign && m[3] !== undefined) fail(`stance "${m[1]}" carries data-stance-labels but is not a design option`);
+  if (m[3] !== undefined && m[3].split("|").length !== 3) fail(`stance "${m[1]}" labels must be three, pipe-separated`);
 }
+for (const s of stances) if (s.id.length > 80) fail(`stance id "${s.id}" is longer than 80 chars`);
 const mountCount = (html.match(/<div class="stance"/g) || []).length;
-const wellFormed = (html.match(/<div class="stance" data-stance="[^"]+" data-stance-title="[^"]*"><\/div>/g) || []).length;
+const wellFormed = (html.match(MOUNT_RE) || []).length;
 if (mountCount !== wellFormed) fail(`${mountCount - wellFormed} stance mount(s) are not empty divs with both attributes`);
 
 // ---- sections
@@ -85,7 +97,7 @@ for (const s of plan.sections) {
   const end = html.indexOf("</section>", start);
   const slice = html.slice(start, end);
   for (const b of s.blocks) {
-    const ids = b.type === "ul" ? b.items.map((i) => i.id) : [b.id];
+    const ids = b.type === "ul" ? b.items.map((i) => i.id) : b.type === "design" ? [b.id, ...b.options.map((o) => o.id)] : [b.id];
     for (const id of ids) if (!slice.includes(`data-block="${id}"`)) fail(`block "${id}" is not inside <section id="${s.id}">`);
   }
 }
@@ -99,12 +111,40 @@ once('<div id="review-identity"></div>', "#review-identity mount");
 once('<div id="review-reviewers"></div>', "#review-reviewers mount");
 once('id="review-tutorial"', "#review-tutorial mount");
 once('<div id="review-general"></div>', "#review-general mount");
-once('<script defer src="assets/config.js"></script>', "config.js script tag");
-once('<script defer src="assets/review.js"></script>', "review.js script tag");
-if (!/assets\/config\.js"><\/script>\s*<script defer src="assets\/review\.js"/.test(html)) fail("config.js must load before review.js");
+// ---- build stamp: <meta name="sc-build">, ?v= on every asset, version.json
+const STAMP_FILES = [
+  "content/plan.json", "dev/build-page.mjs", "assets/site.css", "assets/review.css", "assets/review.js", "assets/config.js",
+  "dev/phone/kit.mjs", "dev/phone/frame.mjs", "dev/phone/screens-look.mjs", "dev/phone/screens-map.mjs", "dev/phone/screens-social.mjs",
+];
+const BUILD_NOW = createHash("sha256")
+  .update(Buffer.concat(STAMP_FILES.map((f) => readFileSync(path.join(root, f)))))
+  .digest("hex")
+  .slice(0, 10);
+const metaBuild = (html.match(/<meta name="sc-build" content="([0-9a-f]{10})">/) || [])[1];
+if (!metaBuild) fail('<meta name="sc-build" content="<10 hex>"> missing from <head>');
+else if (html.indexOf('name="sc-build"') > html.indexOf("</head>")) fail("sc-build meta must be in <head>");
+let fileBuild = null;
+const versionPath = path.join(root, "version.json");
+if (!existsSync(versionPath)) fail("version.json is missing (run node dev/build-page.mjs)");
+else {
+  try {
+    const vj = JSON.parse(readFileSync(versionPath, "utf8"));
+    fileBuild = vj.build;
+    if (Object.keys(vj).length !== 1 || typeof vj.build !== "string") fail('version.json must be exactly {"build":"<hash>"}');
+  } catch (err) { fail(`version.json is not valid JSON: ${err.message}`); }
+}
+if (fileBuild && metaBuild && fileBuild !== metaBuild) fail(`version.json build ${fileBuild} differs from the page's sc-build ${metaBuild}`);
+if (metaBuild && metaBuild !== BUILD_NOW) fail(`stale build: index.html says ${metaBuild}, the sources now hash to ${BUILD_NOW} (run node dev/build-page.mjs)`);
+const B = metaBuild || BUILD_NOW;
+once(`<script defer src="assets/config.js?v=${B}"></script>`, "config.js script tag with ?v=");
+once(`<script defer src="assets/review.js?v=${B}"></script>`, "review.js script tag with ?v=");
+if (!new RegExp(`assets/config\\.js\\?v=${B}"><\\/script>\\s*<script defer src="assets/review\\.js`).test(html)) fail("config.js must load before review.js");
 if (!/<\/script>\s*<\/body>\s*<\/html>\s*$/.test(html)) fail("scripts are not at the end of body");
-once('<link rel="stylesheet" href="assets/site.css">', "site.css link");
-once('<link rel="stylesheet" href="assets/review.css">', "review.css link");
+once(`<link rel="stylesheet" href="assets/site.css?v=${B}">`, "site.css link with ?v=");
+once(`<link rel="stylesheet" href="assets/review.css?v=${B}">`, "review.css link with ?v=");
+for (const m of html.matchAll(/(?:src|href)="(assets\/[^"]+)"/g)) {
+  if (!m[1].endsWith(`?v=${B}`)) fail(`asset URL without the build stamp: ${m[1]}`);
+}
 if (html.indexOf('assets/site.css') > html.indexOf('assets/review.css')) fail("site.css must come before review.css");
 if (!/<html lang="en">/.test(html)) fail("html lang=en missing");
 if (!/<meta charset="utf-8">/.test(html)) fail("charset missing");
@@ -130,7 +170,9 @@ for (let i = 1; i < levels.length; i++) if (levels[i] > levels[i - 1] + 1) fail(
 let copyChecked = 0;
 for (const s of plan.sections) {
   for (const b of s.blocks) {
-    const items = b.type === "ul" ? b.items.map((i) => i.html) : [b.html, b.text, b.fit, b.deliverable, b.risk, b.when, b.title, b.caption, b.cite].filter(Boolean);
+    const items = b.type === "ul" ? b.items.map((i) => i.html)
+      : b.type === "design" ? [b.eyebrow, b.title, b.html, ...b.options.flatMap((o) => [o.name, o.html])]
+      : [b.html, b.text, b.fit, b.deliverable, b.risk, b.when, b.title, b.caption, b.cite].filter(Boolean);
     for (const raw of items) {
       const needle = b.type === "p" || b.type === "ul" || b.type === "quote" || b.type === "callout" || b.type === "question" || b.type === "idea" || b.type === "phase"
         ? raw : raw;
@@ -145,6 +187,58 @@ for (const key of ["tagline", "dek", "about"]) {
   if (!html.includes(plan.meta[key])) fail(`meta.${key} not on the page verbatim`);
 }
 
+// ---- design calls: card and option anchors, previews, jump links
+const moodKeys = new Set();
+for (const s of plan.sections) for (const b of s.blocks) {
+  if (b.type !== "design") continue;
+  if (!/^[a-z]+$/.test(b.call)) fail(`design call "${b.id}" needs a lowercase "call" key`);
+  if (b.options.length < 3 || b.options.length > 4) fail(`design call "${b.id}" has ${b.options.length} options (want 3 or 4)`);
+  if (!new RegExp(`<aside class="design" id="${b.id}" data-block="${b.id}"`).test(html)) fail(`design call "${b.id}" card is missing its id and data-block`);
+  for (const o of b.options) {
+    if (o.stance !== `design-${b.call}-${o.key}`) fail(`design option "${o.id}" stance should be design-${b.call}-${o.key}, is ${o.stance}`);
+    if (!html.includes(`<div class="design-opt-text" data-block="${o.id}">`)) fail(`design option "${o.id}" text block missing`);
+    if (o.mood) {
+      moodKeys.add(o.mood);
+      const n = html.split(`<button type="button" class="design-try" data-mood="${o.mood}">Try it on the page</button>`).length - 1;
+      if (n !== 1) fail(`Try it button for mood "${o.mood}" found ${n} times (want 1)`);
+    }
+  }
+}
+for (const m of html.matchAll(/data-mood="([^"]+)"/g)) if (!moodKeys.has(m[1])) fail(`data-mood "${m[1]}" is not a mood any design option offers`);
+for (const id of [...html.matchAll(/<a href="#([^"]+)"/g)].map((m) => m[1])) {
+  if (!new RegExp(`\\bid="${id}"`).test(html)) fail(`link to #${id} has no target`);
+}
+once('<div class="mood-chip" id="mood-chip" hidden>', "mood preview chip");
+if (!html.includes("Back to the original")) fail("mood chip lacks Back to the original");
+once('<button type="button" class="mood-scheme-btn" data-scheme="light" aria-pressed="false">Light</button>', "chip Light switch");
+once('<button type="button" class="mood-scheme-btn" data-scheme="dark" aria-pressed="false">Dark</button>', "chip Dark switch");
+if (!/sessionStorage\.getItem\("sc\.theme"\)/.test(html.slice(0, html.indexOf("</head>")))) fail("the head script must re-apply the remembered Light / Dark choice");
+
+// ---- phone mockups: every design option shows a light and a dark phone
+const LOOK_PAL = { riso: "riso", "night-walk": "night", "field-kit": "field", "kingdom-glass": "glass" };
+let phonePairs = 0;
+for (const s of plan.sections) for (const b of s.blocks) {
+  if (b.type !== "design") continue;
+  const cardStart = html.indexOf(`<aside class="design" id="${b.id}"`);
+  const cardEnd = html.indexOf("</aside>", cardStart);
+  const opts = html.slice(cardStart, cardEnd).split('<div class="design-opt">').slice(1);
+  if (opts.length !== b.options.length) { fail(`design call "${b.id}" renders ${opts.length} options (want ${b.options.length})`); continue; }
+  b.options.forEach((o, i) => {
+    const chunk = opts[i];
+    const pairAt = chunk.indexOf('<div class="phone-pair" role="img" aria-label="');
+    if (pairAt < 0 || pairAt > chunk.indexOf('<div class="design-opt-text"')) { fail(`design option "${o.id}" has no phone pair before its text`); return; }
+    phonePairs++;
+    const phones = [...chunk.matchAll(/<svg class="ph ph-(light|dark) ([a-z-]+)"/g)].map((m) => [m[1], m[2]]);
+    if (phones.length !== 2 || phones[0][0] !== "light" || phones[1][0] !== "dark") fail(`design option "${o.id}" needs a light phone then a dark phone, has ${phones.map((p) => p[0]).join(", ") || "none"}`);
+    const caps = [...chunk.matchAll(/<span class="phone-cap">([^<]*)<\/span>/g)].map((m) => m[1]);
+    if (caps.join("|") !== "Light|Dark") fail(`design option "${o.id}" phone captions are "${caps.join("|")}" (want Light|Dark)`);
+    const want = b.call === "look" ? (sch) => `ph-pal-${LOOK_PAL[o.key]}-${sch[0]}` : () => "ph-follow";
+    for (const [sch, cls] of phones) if (cls !== want(sch)) fail(`design option "${o.id}" ${sch} phone has class ${cls} (want ${want(sch)})`);
+  });
+}
+if (html.includes("phone-gallery")) fail("the published page must not link to dev/phone-gallery.html");
+if (!existsSync(path.join(root, "dev", "phone-gallery.html"))) fail("dev/phone-gallery.html is missing (run node dev/build-page.mjs)");
+
 // ---- diagrams: viewBox + width=100%
 for (const m of html.matchAll(/<svg\b([^>]*)>/g)) {
   const attrs = m[1];
@@ -155,10 +249,60 @@ for (const m of html.matchAll(/<svg\b([^>]*)>/g)) {
 // every symbol referenced exists
 const symbols = new Set([...html.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]));
 for (const m of html.matchAll(/href="#(g-[a-z]+|rings-sym)"/g)) if (!symbols.has(m[1])) fail(`<use> references missing symbol #${m[1]}`);
+for (const m of html.matchAll(/url\(#([^)]+)\)/g)) if (!new RegExp(`id="${m[1]}"`).test(html)) fail(`url(#${m[1]}) has no target`);
 
 // ---- z-index under 50 in site.css
 const css = readFileSync(path.join(root, "assets", "site.css"), "utf8");
 for (const m of css.matchAll(/z-index:\s*(-?\d+)/g)) if (Number(m[1]) >= 50) fail(`site.css z-index ${m[1]} is not under 50`);
+// every mood a button offers (riso is the base palette) has a light token set,
+// a dark set for the dark system theme, and a dark set for the Light / Dark switch
+const MOOD_TOKENS = ["color-scheme", "--paper", "--paper-2", "--ink", "--ink-soft", "--line", "--riso-blue", "--riso-pink", "--sunflower", "--moss", "--mark", "--mark-hot", "--shadow"];
+const reEsc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+for (const k of moodKeys) {
+  if (k === "riso") continue;
+  const variants = [
+    ["light", `:root[data-mood="${k}"] {`, "light"],
+    ["dark (system)", `:root[data-mood="${k}"]:not([data-theme="light"]) {`, "dark"],
+    ["dark (switch)", `:root[data-mood="${k}"][data-theme="dark"] {`, "dark"],
+  ];
+  for (const [label, sel, scheme] of variants) {
+    const block = (css.match(new RegExp(`${reEsc(sel)}([^}]*)\\}`)) || [])[1];
+    if (!block) { fail(`site.css has no ${label} token set for mood "${k}" (${sel})`); continue; }
+    for (const tok of MOOD_TOKENS) if (!new RegExp(`(^|[\\s;])${tok}:`).test(block)) fail(`mood "${k}" ${label} does not set ${tok}`);
+    if (!new RegExp(`color-scheme:\\s*${scheme}`).test(block)) fail(`mood "${k}" ${label} must set color-scheme: ${scheme}`);
+  }
+  const media = css.indexOf(`:root[data-mood="${k}"]:not([data-theme="light"]) {`);
+  if (media > -1 && css.lastIndexOf("@media (prefers-color-scheme: dark)", media) < css.lastIndexOf("}\n}", media)) fail(`mood "${k}" system-dark set is not inside @media (prefers-color-scheme: dark)`);
+}
+
+// ---- the eight palettes: tokens present, phone classes present, contrast
+const PALS = ["riso", "night", "field", "glass"];
+const PAL_KEYS = ["bg", "surface", "ink", "soft", "line", "accent", "accent2", "hi", "moss"];
+const lum = (hex) => {
+  const n = parseInt(hex.slice(1), 16);
+  return [n >> 16, (n >> 8) & 255, n & 255].map((c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; })
+    .reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0);
+};
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const contrastRows = [];
+for (const p of PALS) for (const sch of ["l", "d"]) {
+  const v = {};
+  for (const k of PAL_KEYS) {
+    const m = css.match(new RegExp(`--pal-${p}-${sch}-${k}:\\s*(#[0-9A-Fa-f]{6});`));
+    if (!m) fail(`palette token --pal-${p}-${sch}-${k} missing or not a 6-digit hex`);
+    else v[k] = m[1];
+  }
+  if (!css.includes(`.ph-pal-${p}-${sch},`)) fail(`site.css lacks the phone palette class .ph-pal-${p}-${sch}`);
+  if (Object.keys(v).length !== PAL_KEYS.length) continue;
+  const row = [`${p}-${sch === "l" ? "light" : "dark"}`];
+  for (const k of ["ink", "soft", "accent"]) {
+    const onBg = ratio(v[k], v.bg), onSurface = ratio(v[k], v.surface);
+    row.push(`${k} ${onBg.toFixed(2)}/${onSurface.toFixed(2)}`);
+    if (Math.min(onBg, onSurface) < 4.5) fail(`palette ${p}-${sch}: ${k} on bg/surface is ${onBg.toFixed(2)}/${onSurface.toFixed(2)} (want 4.5 or more)`);
+  }
+  contrastRows.push(row.join("  "));
+}
+
 for (const tok of ["--paper", "--paper-2", "--ink", "--ink-soft", "--line", "--riso-blue", "--riso-pink", "--sunflower", "--moss", "--mark", "--mark-hot", "--shadow", "--font-display", "--font-body", "--font-mono"]) {
   const n = (css.match(new RegExp(`${tok.replace(/-/g, "\\-")}:`, "g")) || []).length;
   const want = tok.startsWith("--font") ? 1 : 3;
@@ -169,6 +313,10 @@ for (const tok of ["--paper", "--paper-2", "--ink", "--ink-soft", "--line", "--r
 notes.push(`${blockIds.length} block ids in plan.json, ${foundBlocks.size} distinct data-block ids on the page`);
 notes.push(`${stances.length} stance ids in plan.json, ${foundStances.size} distinct data-stance ids on the page`);
 notes.push(`${plan.sections.length} sections, ${copyChecked} copy fields checked verbatim, ${levels.length} headings in order`);
+notes.push(`${stances.filter((s) => s.design).length} design stances across ${plan.sections.flatMap((s) => s.blocks).filter((b) => b.type === "design").length} design calls, moods: ${[...moodKeys].join(", ")}`);
+notes.push(`${phonePairs} phone pairs (light and dark) on the design options`);
+notes.push(`contrast on bg/surface, text needs 4.5:\n      ${contrastRows.join("\n      ")}`);
+notes.push(`build ${metaBuild} (sources hash to ${BUILD_NOW}, version.json says ${fileBuild})`);
 for (const n of notes) console.log("  " + n);
 if (failures.length) {
   console.error(`\nFAIL (${failures.length}):`);

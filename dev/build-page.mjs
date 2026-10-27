@@ -5,11 +5,40 @@
 // hand-drawn diagrams. Run: node dev/build-page.mjs
 
 import { readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { phone, resetIds } from "./phone/frame.mjs";
+import { listening, MOOD_PALETTE } from "./phone/screens-look.mjs";
+import { SCREENS as MAP_SCREENS } from "./phone/screens-map.mjs";
+import { SCREENS as SOCIAL_SCREENS } from "./phone/screens-social.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const plan = JSON.parse(readFileSync(path.join(root, "content", "plan.json"), "utf8"));
+
+// ---------------------------------------------------------------- build stamp
+// BUILD is the first 10 hex chars of sha256 over these files, concatenated in
+// this order. It goes in <meta name="sc-build">, on every asset URL as ?v=, and
+// in version.json, which open pages poll so they reload after a deploy.
+// dev/render-check.mjs recomputes it the same way and fails on a stale build.
+const STAMP_FILES = [
+  "content/plan.json",
+  "dev/build-page.mjs",
+  "assets/site.css",
+  "assets/review.css",
+  "assets/review.js",
+  "assets/config.js",
+  "dev/phone/kit.mjs",
+  "dev/phone/frame.mjs",
+  "dev/phone/screens-look.mjs",
+  "dev/phone/screens-map.mjs",
+  "dev/phone/screens-social.mjs",
+];
+const BUILD = createHash("sha256")
+  .update(Buffer.concat(STAMP_FILES.map((f) => readFileSync(path.join(root, f)))))
+  .digest("hex")
+  .slice(0, 10);
+const v = (url) => `${url}?v=${BUILD}`;
 
 // ---------------------------------------------------------------- helpers
 
@@ -41,9 +70,18 @@ function misreg(tag, inner, attrs = "") {
     `<span class="misreg-ink">${inner}</span></${tag}>`;
 }
 
-function stance(id, title) {
-  return `<div class="stance" data-stance="${esc(id)}" data-stance-title="${esc(title)}"></div>`;
+function stance(id, title, labels) {
+  const lab = labels ? ` data-stance-labels="${esc(labels)}"` : "";
+  return `<div class="stance" data-stance="${esc(id)}" data-stance-title="${esc(title)}"${lab}></div>`;
 }
+
+// Design calls vote with their own words; the stored values stay yes|maybe|cut.
+const DESIGN_LABELS = "Love it|Maybe|Not this";
+
+// The moods a look option can try on. Each has a light and a dark set in
+// site.css and follows the system theme until the chip's Light / Dark switch
+// pins one. "riso" is the original palette worn on purpose.
+const MOODS = ["riso", "night-walk", "field-kit", "kingdom-glass"];
 
 const SIZE_WORD = { S: "days", M: "weeks", L: "a season" };
 
@@ -159,6 +197,57 @@ const CAPTIONS = {
   walk: "The walk as I imagined it: off the gravel path toward the pad, under the hackberry, up the rise to where the mix lines up, then to the stone.",
 };
 
+// ---------------------------------------------------------------- design call phones
+// Every design option shows the app on a phone, light and dark side by side.
+// The look call pins each mood's own palettes so the four compare directly;
+// the other calls paint with whatever mood the page is wearing (ph-follow).
+// The drawings live in dev/phone/ (see dev/phone/CONTRACT.md).
+
+const SCREENS = { ...MAP_SCREENS, ...SOCIAL_SCREENS };
+
+function screenFor(call, key) {
+  if (call === "look") return { screen: listening(key), palette: MOOD_PALETTE[key] };
+  const fn = SCREENS[call] && SCREENS[call][key];
+  if (typeof fn !== "function") throw new Error(`No phone screen for design option ${call}/${key} (dev/phone/screens-*.mjs)`);
+  return { screen: fn, palette: null };
+}
+
+function phonePair(call, key, label) {
+  const { screen, palette } = screenFor(call, key);
+  const one = (scheme) => `<div class="phone-fig">${phone({ scheme, palette, screen })}` +
+    `<span class="phone-cap">${scheme === "light" ? "Light" : "Dark"}</span></div>`;
+  return `<div class="phone-pair" role="img" aria-label="${esc(label)}">
+${one("light")}
+${one("dark")}
+</div>`;
+}
+
+// The little pencil beside every design call's eyebrow.
+const PENCIL = `<svg class="design-pencil" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 13.5 L3.4 10.2 L10.9 2.7 A1.3 1.3 0 0 1 12.7 2.7 L13.3 3.3 A1.3 1.3 0 0 1 13.3 5.1 L5.8 12.6 Z M9.8 3.8 L12.2 6.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+
+function renderDesign(b) {
+  const opts = b.options.map((o) => {
+    if (o.mood && !MOODS.includes(o.mood)) throw new Error(`Unknown mood "${o.mood}" on ${o.id}`);
+    const tryIt = o.mood ? `\n    <button type="button" class="design-try" data-mood="${esc(o.mood)}">Try it on the page</button>` : "";
+    return `  <div class="design-opt">
+    ${phonePair(b.call, o.key, `${o.name}: the app on a phone, in light and in dark`)}
+    <div class="design-opt-text" data-block="${o.id}">
+      <h4 class="design-opt-name">${esc(o.name)}</h4>
+      <p>${o.html}</p>
+    </div>${tryIt}
+    ${stance(o.stance, `${b.short}: ${o.name}`, DESIGN_LABELS)}
+  </div>`;
+  });
+  return `<aside class="design" id="${b.id}" data-block="${b.id}" aria-labelledby="${b.id}-title">
+  <p class="design-eyebrow">${PENCIL}${esc(b.eyebrow)}</p>
+  <h3 class="design-title" id="${b.id}-title">${esc(b.title)}</h3>
+  <p class="design-intro">${b.html}</p>
+  <div class="design-opts">
+${opts.join("\n")}
+  </div>
+</aside>`;
+}
+
 // ---------------------------------------------------------------- blocks
 
 function renderBlock(b, ctx) {
@@ -174,7 +263,7 @@ function renderBlock(b, ctx) {
     }
 
     case "ul":
-      return `<ul class="list" data-block="${b.id}">\n` +
+      return `<ul class="list${b.style === "jump" ? " list-jump" : ""}" data-block="${b.id}">\n` +
         b.items.map((it) => `  <li data-block="${it.id}">${it.html}</li>`).join("\n") +
         `\n</ul>`;
 
@@ -227,6 +316,9 @@ function renderBlock(b, ctx) {
     ${stance(b.stance, `Phase ${b.n}: ${b.title}`)}
   </div>
 </article>`;
+
+    case "design":
+      return renderDesign(b);
 
     case "question":
       return `<li class="q" data-block="${b.id}">
@@ -393,6 +485,135 @@ const PAGE_SCRIPT = `(function () {
   });
 })();`;
 
+// ---------------------------------------------------------------- mood preview
+// "Try it on the page" re-themes the whole plan with one of the look options.
+// site.css holds a light and a dark token set per mood under html[data-mood];
+// this script flips the attribute, shows the chip, and remembers the choice
+// for the tab. The chip's Light / Dark switch pins html[data-theme]; until it
+// is used, a mood follows the system theme like the original page.
+
+const MOOD_NAMES = {};
+for (const s of plan.sections) for (const b of s.blocks) {
+  if (b.type === "design") for (const o of b.options) if (o.mood) MOOD_NAMES[o.mood] = o.name;
+}
+const MOOD_JSON = JSON.stringify({ moods: MOODS, names: MOOD_NAMES });
+
+// In <head>, before first paint, so a remembered mood never flashes the original.
+const MOOD_HEAD_SCRIPT = `(function () {
+  try {
+    var m = sessionStorage.getItem("sc.mood");
+    var t = sessionStorage.getItem("sc.theme");
+    if (m && ${JSON.stringify(MOODS)}.indexOf(m) > -1) {
+      document.documentElement.setAttribute("data-mood", m);
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (err) { /* no storage: start on the original */ }
+})();`;
+
+const MOOD_CHIP = `<div class="mood-chip" id="mood-chip" hidden>
+  <span class="mood-chip-now">Previewing <strong id="mood-chip-name"></strong></span>
+  <span class="mood-chip-sep" aria-hidden="true">·</span>
+  <span class="mood-scheme" role="group" aria-label="Light or dark">
+    <button type="button" class="mood-scheme-btn" data-scheme="light" aria-pressed="false">Light</button>
+    <span class="mood-chip-sep" aria-hidden="true">·</span>
+    <button type="button" class="mood-scheme-btn" data-scheme="dark" aria-pressed="false">Dark</button>
+  </span>
+  <span class="mood-chip-sep" aria-hidden="true">·</span>
+  <button type="button" class="mood-back" id="mood-back">Back to the original</button>
+</div>
+<p class="vh" id="mood-live" role="status" aria-live="polite"></p>`;
+
+const MOOD_SCRIPT = `(function () {
+  "use strict";
+  var cfg = ${MOOD_JSON};
+  var root = document.documentElement;
+  var KEY = "sc.mood";
+  var THEME_KEY = "sc.theme";
+  var chip = document.getElementById("mood-chip");
+  var chipName = document.getElementById("mood-chip-name");
+  var back = document.getElementById("mood-back");
+  var live = document.getElementById("mood-live");
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".design-try[data-mood]"));
+  var schemeButtons = Array.prototype.slice.call(document.querySelectorAll(".mood-scheme-btn[data-scheme]"));
+  var metas = Array.prototype.slice.call(document.querySelectorAll('meta[name="theme-color"]'));
+  var darkQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  metas.forEach(function (m) { m.setAttribute("data-original", m.getAttribute("content") || ""); });
+
+  function known(m) { return cfg.moods.indexOf(m) > -1; }
+  function current() {
+    var m = root.getAttribute("data-mood");
+    return m && known(m) ? m : "";
+  }
+  function scheme() {
+    var t = root.getAttribute("data-theme");
+    if (t === "light" || t === "dark") return t;
+    return darkQuery && darkQuery.matches ? "dark" : "light";
+  }
+  function remember(key, value) {
+    try {
+      if (value) sessionStorage.setItem(key, value);
+      else sessionStorage.removeItem(key);
+    } catch (err) { /* the preview still works, it just is not remembered */ }
+  }
+  function paint() {
+    var m = current();
+    var s = scheme();
+    buttons.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-mood") === m ? "true" : "false"); });
+    schemeButtons.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-scheme") === s ? "true" : "false"); });
+    if (chip) {
+      chip.hidden = !m;
+      if (chipName) chipName.textContent = m ? (cfg.names[m] || m) : "";
+    }
+    var paper = m ? getComputedStyle(root).getPropertyValue("--paper").trim() : "";
+    metas.forEach(function (meta) { meta.setAttribute("content", paper || meta.getAttribute("data-original")); });
+  }
+  function set(m) {
+    if (!known(m)) m = "";
+    if (m) {
+      root.setAttribute("data-mood", m);
+    } else {
+      root.removeAttribute("data-mood");
+      root.removeAttribute("data-theme");
+      remember(THEME_KEY, "");
+    }
+    remember(KEY, m);
+    paint();
+    if (live) live.textContent = m ? "Previewing " + (cfg.names[m] || m) + " on the whole page, " + scheme() : "Back to the original look";
+  }
+  function setScheme(s) {
+    if (s !== "light" && s !== "dark") return;
+    root.setAttribute("data-theme", s);
+    remember(THEME_KEY, s);
+    paint();
+    var m = current();
+    if (live) live.textContent = (m ? (cfg.names[m] || m) + " in " : "") + s;
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var m = b.getAttribute("data-mood");
+      // a second press on the mood you are wearing takes it off again
+      set(m === current() ? "" : m);
+    });
+  });
+  schemeButtons.forEach(function (b) {
+    b.addEventListener("click", function () { setScheme(b.getAttribute("data-scheme")); });
+  });
+  if (back) {
+    back.addEventListener("click", function () {
+      set("");
+      if (document.activeElement === back) back.blur();
+    });
+  }
+  if (darkQuery) {
+    var onChange = function () { paint(); };
+    if (darkQuery.addEventListener) darkQuery.addEventListener("change", onChange);
+    else if (darkQuery.addListener) darkQuery.addListener(onChange);
+  }
+  paint();
+})();`;
+
+resetIds();
 const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -406,8 +627,12 @@ const html = `<!doctype html>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/site.css">
-  <link rel="stylesheet" href="assets/review.css">
+  <meta name="sc-build" content="${BUILD}">
+  <link rel="stylesheet" href="${v("assets/site.css")}">
+  <link rel="stylesheet" href="${v("assets/review.css")}">
+  <script>
+${MOOD_HEAD_SCRIPT}
+  </script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -448,15 +673,142 @@ ${plan.sections.map(renderSection).join("\n\n")}
   </footer>
 </div>
 
+${MOOD_CHIP}
+
 <script>
 ${PAGE_SCRIPT}
 </script>
-<script defer src="assets/config.js"></script>
-<script defer src="assets/review.js"></script>
+<script>
+${MOOD_SCRIPT}
+</script>
+<script defer src="${v("assets/config.js")}"></script>
+<script defer src="${v("assets/review.js")}"></script>
 </body>
 </html>
 `;
 
 const outPath = path.join(root, "index.html");
 writeFileSync(outPath, html);
-console.log(`wrote ${path.relative(root, outPath)} (${html.length.toLocaleString()} chars, ${plan.sections.length} sections)`);
+writeFileSync(path.join(root, "version.json"), JSON.stringify({ build: BUILD }) + "\n");
+console.log(`wrote ${path.relative(root, outPath)} (${html.length.toLocaleString()} chars, ${plan.sections.length} sections) and version.json (build ${BUILD})`);
+
+// ---------------------------------------------------------------- phone gallery (dev aid)
+// dev/phone-gallery.html shows every option's phone pair for all five calls,
+// with a mood, theme and size switcher, so whoever draws the screens can look
+// and screenshot fast. Query parameters set the switches before first paint:
+// ?mood=night-walk&theme=dark&size=l&call=drop. The published page never
+// links to it.
+
+resetIds();
+const galleryCalls = plan.sections.flatMap((s) => s.blocks).filter((b) => b.type === "design");
+const galleryControls = [
+  ["mood", "Mood", [["", "Original"], ...MOODS.map((m) => [m, MOOD_NAMES[m] || m])]],
+  ["theme", "Theme", [["", "System"], ["light", "Light"], ["dark", "Dark"]]],
+  ["size", "Size", [["", "Page size"], ["l", "Large"]]],
+  ["call", "Show", [["", "All calls"], ...galleryCalls.map((b) => [b.call, b.short])]],
+];
+const gallerySection = (b) => {
+  const pinned = b.call === "look";
+  return `<section class="gal-call" data-call="${esc(b.call)}" id="call-${esc(b.call)}">
+  <h2>${esc(b.short)} <span class="gal-key">${esc(b.call)} · ${pinned ? "each mood pins its own palettes" : "follows the page's mood"}</span></h2>
+  <p class="gal-src">${pinned ? "dev/phone/screens-look.mjs" : b.call === "drop" || b.call === "first" ? "dev/phone/screens-map.mjs" : "dev/phone/screens-social.mjs"} · ${esc(b.title)}</p>
+  <div class="gal-grid">
+${b.options.map((o) => `  <figure class="gal-opt" id="opt-${esc(b.call)}-${esc(o.key)}">
+    ${phonePair(b.call, o.key, `${o.name}: the app on a phone, in light and in dark`)}
+    <figcaption><strong>${esc(o.name)}</strong> <span class="gal-key">${esc(o.key)}</span></figcaption>
+  </figure>`).join("\n")}
+  </div>
+</section>`;
+};
+const gallery = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Phone gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/site.css?v=${BUILD}">
+  <script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var r = document.documentElement;
+  var m = q.get("mood"), t = q.get("theme"), s = q.get("size"), c = q.get("call");
+  if (m && ${JSON.stringify(MOODS)}.indexOf(m) > -1) r.setAttribute("data-mood", m);
+  if (t === "light" || t === "dark") r.setAttribute("data-theme", t);
+  if (s === "l") r.setAttribute("data-size", "l");
+  if (c) r.setAttribute("data-call", c);
+})();
+  </script>
+  <style>
+    .gal { max-width: 84rem; margin: 0 auto; padding: 1.5rem max(16px, env(safe-area-inset-left, 0px)) 4rem; }
+    .gal h1 { margin: 0 0 .4rem; font-family: var(--font-display); font-weight: 500; font-size: 1.8rem; }
+    .gal-intro { margin: 0 0 1rem; color: var(--ink-soft); font-size: 1rem; max-width: 70ch; }
+    .gal-intro code, .gal-src { font-family: var(--font-mono); font-size: .78rem; }
+    .gal-controls { display: flex; flex-wrap: wrap; gap: .6rem 1.4rem; margin: 0 0 1.5rem; padding: .7rem 0; border-block: 1px dashed var(--line); font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; }
+    .gal-controls fieldset { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; margin: 0; padding: 0; border: 0; }
+    .gal-controls legend { float: left; margin-right: .4rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .12em; }
+    .gal-controls button { min-height: 30px; padding: .2rem .65rem; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--ink); font: inherit; cursor: pointer; }
+    .gal-controls button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+    .gal-call { margin: 0 0 2.5rem; }
+    .gal-call h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.35rem; }
+    .gal-key { font-family: var(--font-mono); font-size: .68rem; font-weight: 400; letter-spacing: .08em; color: var(--ink-soft); }
+    .gal-src { margin: .2rem 0 .9rem; color: var(--ink-soft); }
+    .gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 1.25rem; }
+    .gal-opt { margin: 0; }
+    .gal-opt figcaption { margin-top: .45rem; font-size: .95rem; }
+    :root[data-size="l"] .gal-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 32rem), 1fr)); }
+    :root[data-size="l"] .phone-fig { --phone-w: 15rem; }
+    :root[data-call] .gal-call { display: none; }
+    ${galleryCalls.map((b) => `:root[data-call="${b.call}"] .gal-call[data-call="${b.call}"]`).join(",\n    ")} { display: block; }
+  </style>
+</head>
+<body>
+<div class="gal">
+  <h1>Phone gallery</h1>
+  <p class="gal-intro">Every design option's phone pair, light and dark, for all five calls. A dev aid built by <code>node dev/build-page.mjs</code>; the plan page never links here. The look call pins each mood's own palettes; the other four calls follow whichever mood is chosen below. The switches also read the address: <code>?mood=night-walk&amp;theme=dark&amp;size=l&amp;call=drop</code>.</p>
+  <div class="gal-controls">
+${galleryControls.map(([k, label, opts]) => `    <fieldset data-key="${k}"><legend>${label}</legend>${opts.map(([v, t]) => `<button type="button" data-value="${esc(v)}">${esc(t)}</button>`).join("")}</fieldset>`).join("\n")}
+  </div>
+${galleryCalls.map(gallerySection).join("\n")}
+</div>
+<script>
+(function () {
+  "use strict";
+  var r = document.documentElement;
+  var ATTR = { mood: "data-mood", theme: "data-theme", size: "data-size", call: "data-call" };
+  var sets = Array.prototype.slice.call(document.querySelectorAll(".gal-controls fieldset"));
+  function paint() {
+    var q = new URLSearchParams();
+    sets.forEach(function (fs) {
+      var key = fs.getAttribute("data-key");
+      var val = r.getAttribute(ATTR[key]) || "";
+      if (val) q.set(key, val);
+      Array.prototype.forEach.call(fs.querySelectorAll("button"), function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-value") === val ? "true" : "false");
+      });
+    });
+    var qs = q.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+  }
+  sets.forEach(function (fs) {
+    var key = fs.getAttribute("data-key");
+    fs.addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest("button") : null;
+      if (!b) return;
+      var val = b.getAttribute("data-value");
+      if (val) r.setAttribute(ATTR[key], val);
+      else r.removeAttribute(ATTR[key]);
+      paint();
+    });
+  });
+  paint();
+})();
+</script>
+</body>
+</html>
+`;
+writeFileSync(path.join(root, "dev", "phone-gallery.html"), gallery);
+console.log(`wrote dev/phone-gallery.html (${gallery.length.toLocaleString()} chars, ${galleryCalls.reduce((n, b) => n + b.options.length, 0)} phone pairs)`);

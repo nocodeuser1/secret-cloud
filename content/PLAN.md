@@ -1,6 +1,6 @@
 # The Secret Cloud
 
-Note: this is the text of the plan site. The site also carries three diagrams: two sides of one thing, a drop seen from above, and the walk through the park.
+Note: this is the text of the plan site. The site also carries three diagrams: two sides of one thing, a drop seen from above, and the walk through the park. It also carries five design calls, each a set of options drawn as the app on a phone in light and dark, to vote on; the first can re-theme the whole page with Try it on the page, in light or dark.
 
 *A sound you can walk into*
 
@@ -54,11 +54,33 @@ It belongs to both of you. The word used on the call was ours. The next step is 
 
 Vote on each pillar, and leave a note where you would say it differently.
 
+**DESIGN CALL: What the whole thing looks like**
+
+Kellen, the look of this is yours to steer, and these four are a starting point to push against. Each one shows the app on a phone, light and dark side by side. Tap Try it on the page to wear one across this whole plan, vote Love it, Maybe or Not this on each, and highlight any line to say what you would change.
+
+- **Riso zine.** What you are reading now: paper stock, two inks that never quite line up, and rings everywhere. *(Try it on the page.)*
+- **Night walk.** The park after dark. Deep forest green, lantern amber and moss, with type you can read by the light of a phone. *(Try it on the page.)*
+- **Field kit.** Cream stock, safety orange and mono tape labels, like gear packed for a long day in the woods. *(Try it on the page.)*
+- **Kingdom glass.** Deep blue and gold, with warm light coming through like a stained-glass window. Only for the kingdom. *(Try it on the page.)*
+
+*Vote on each: Love it, Maybe, Not this.*
+
 ### Drops and soundscapes
 
 A drop is one piece of audio placed at a spot. It has a radius, say thirty feet, a decibel level at the outer ring and another at the inner ring. Fifty loops in one vibe across a park, and the space is curated. You could need no map at all, and follow your ears.
 
 A soundscape is Israel's layer on top. Each instrument's gain is tied to a location. There is a perfect spot where the mix lines up the way it sounds on the album, in stereo. Walk toward the rock where the violin was played and the violin gets louder. It stays simple: louder as you approach. It is not true 3D audio. Instruments show as symbols on the map. Only soundscapes get this, so they stay special. The live jams and worship sessions are content too.
+
+**DESIGN CALL: How a drop shows on the map**
+
+The diagram above is how I picture a drop from the air. On the phone it could be drawn a few ways, or left off the map entirely.
+
+- **Rings.** The outer and inner ring drawn as they are, so you can see where the sound starts and where it is loudest.
+- **Soft glow.** A bloom of colour with no hard edge, brighter toward the middle, like a lantern seen through fog.
+- **Nothing until you hear it.** The map stays blank where a drop sits. It appears only after you have walked into it.
+- **Hand-inked mark.** A small drawn mark for each drop, a little uneven, as if someone marked the map by hand.
+
+*Vote on each: Love it, Maybe, Not this.*
 
 ### Easter eggs
 
@@ -71,6 +93,17 @@ Those tight drops could be where the quiet things go: Bible verses, prophetic wo
 The app generates a QR code for the band. You post it around: flyers, signs, online. Scanning it is the invite. When someone shows up, their phone gets an invitation to join the event locally, with turn-by-turn directions to the radius. A scavenger hunt for music. Live performances only.
 
 Inside the radius during the show, they can enter an app experience with the band. There were two ideas: letting the crowd alter the effects, which came up on the call as a probable disaster with many people, or visuals on loop that match the vibe of that area, generated monthly with a few hours of AI video work. There is a reward for showing up that nobody else gets, like a recording of that live set. Follow the band in the app and get notified each month.
+
+**DESIGN CALL: What a secret-show invite looks like**
+
+The QR code is the invitation, so the thing it is printed on carries the mood. This is what someone might find pinned to a board or tucked into a library book.
+
+- **Ticket stub.** A torn stub with a perforated edge, a date, and the code where the seat number would go.
+- **Handwritten note.** A folded card in someone's handwriting, with the code drawn small in one corner.
+- **Plain black card.** One black card, one white code, nothing else on it. You scan it or you keep walking.
+- **Photo print.** A small print of the place itself with the code on the back, so the picture is the clue.
+
+*Vote on each: Love it, Maybe, Not this.*
 
 ### Replies and testimonies
 
@@ -106,6 +139,17 @@ When I look around, there is a stone at the top of the rise. Flat, grey, a littl
 I step up beside it and the music drops back, and a voice I do not know speaks a few slow lines, close, like someone standing next to me. My hand is on the stone. It is warm from the sun.
 
 Then a branch snaps behind me. Someone in a grey hoodie comes through the same gap in the trees, earbuds in, listening. They stop where the violin comes in, and I watch their face change.
+
+**DESIGN CALL: The first thing you see**
+
+In the walk above, the link opens a screen with one line on it. That is one guess at what someone meets after the sign, and here are four.
+
+- **Sound first.** One ring and a live level that rises as you get closer. A pulse to follow, with no map and no words.
+- **Map first.** A plain map of the park with a dot for you and a soft hint of which way to head.
+- **Words first.** A single line, like something is playing to the north, and nothing else on the screen.
+- **Near-black.** A screen that is almost off. Put the phone away and listen; it wakes only when something is close.
+
+*Vote on each: Love it, Maybe, Not this.*
 
 ### Things that must stay true
 
@@ -351,8 +395,27 @@ Multi-stem soundscapes. Each stem is its own drop around the perfect spot. Stand
 9. Should the first easter egg be heard in a voice, or read as text on the screen?
 10. Should the app be free, always, with no way to pay?
 
+**DESIGN CALL: The mark on the home screen**
+
+One more question, answered with a drawing. This is the small mark that sits on a phone and in the corner of every sign.
+
+- **Rings cloud.** Three rings that soften into a cloud along the top, the drop and the name in one shape.
+- **White rabbit.** A small rabbit drawn in a single line. Follow it, and you know where that comes from.
+- **Keyhole.** A keyhole with rings inside, something private with an invitation to look through.
+- **Wordmark only.** No symbol at all. The Secret Cloud set in small mono type, quiet as a label.
+
+*Vote on each: Love it, Maybe, Not this.*
+
 ## Leave your marks
 
 *Highlight a line, write what you think, and vote. I read all of it.*
 
 Every note you leave and every vote you cast on this page is stamped with your name and saved. I read all of it before the build starts, and it decides what gets built first. Highlight any line to leave a note on it. Vote Yes, Maybe or Cut it on the pillars, the trails, the phases and the questions. The box at the bottom is for everything else.
+
+Kellen, the look is yours. Five design calls are tucked into the plan as small phone mockups, each in light and dark. Try them, vote Love it, Maybe or Not this, and say in a note what you would change.
+
+- [The look of the whole thing](#vision-design-look), four moods you can try on
+- [How a drop shows on the map](#vision-design-drop), next to the rings
+- [The secret-show invite card](#vision-design-invite), under the band account
+- [The first screen](#vision-design-first), after the walk
+- [The mark on the home screen](#questions-design-mark), after the questions

@@ -62,3 +62,8 @@ Google Fonts link (put in `index.html` head, `display=swap`): Fraunces (opsz 9..
 ## Don't
 
 - No emoji as section markers. No purple-to-blue gradients. No rounded card grids everywhere. No everything-centered. No lorem ipsum. No 100vh hero. No Inter/Space Grotesk. No "worth noting"/"honest caveat" copy. No em-dashes in copy.
+
+## Moods and phone mockups (added with the design calls)
+
+- The look call offers four moods (riso, night walk, field kit, kingdom glass). Each has a full light and a full dark palette, stored once as `--pal-<look>-<l|d>-<role>` tokens in `assets/site.css`. A previewed mood follows the system theme; the preview chip's Light / Dark switch pins `html[data-theme]`. Ink, soft ink and accent stay at 4.5:1 or better in all eight sets (`dev/render-check.mjs` measures it).
+- Every design option is drawn as the app on a phone, light and dark side by side, from `dev/phone/` (see `dev/phone/CONTRACT.md`). The look call pins each mood's own palettes; the other calls follow whatever mood the page wears.

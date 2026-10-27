@@ -22,14 +22,39 @@
   --sc-body: var(--font-body, 'Newsreader', 'Iowan Old Style', Georgia, serif);
   --sc-mono: var(--font-mono, 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace);
   --sc-scrim: rgba(28, 27, 46, 0.28);
+  /* Fallbacks for browsers without color-mix(); the @supports block below derives these from the page tokens,
+     so they follow the theme and any html[data-mood] preview without a palette of their own here. */
   --sc-gate-scrim: rgba(237, 235, 227, 0.72);
   --sc-selection: rgba(45, 79, 216, 0.22);
   --sc-danger: #9c2a27;
-  /* pressed Yes: moss deepened with ink so white text reaches AA; dark keeps plain moss (see overrides) */
-  --sc-moss-deep: color-mix(in srgb, var(--sc-moss) 78%, var(--sc-ink));
+  --sc-moss-deep: var(--sc-moss);
+  /* Text on a filled accent (blue, moss, ink-soft). Those accents are text colours on paper in every theme and
+     mood, so paper on them reads too (5.5:1 and up in light, 7:1 and up in dark). */
+  --sc-on-accent: var(--sc-paper);
+  /* Text on pink. Pink is a fill colour on this page, so its text is a dark ink, or (where relative colour is
+     supported, below) black or white picked from the pink's own lightness. */
+  --sc-on-pink: #1c1b2e;
+  --sc-cursor-shadow: rgba(0, 0, 0, 0.3);
   --sc-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --sc-radius: 10px;
   --sc-cut: 255px 15px 225px 15px / 15px 225px 15px 255px;
+}
+
+@supports (background: color-mix(in srgb, red 50%, blue)) {
+  .sc-layer,
+  .sc-ui {
+    --sc-gate-scrim: color-mix(in srgb, var(--sc-paper) 72%, transparent);
+    --sc-selection: color-mix(in srgb, var(--sc-blue) 26%, transparent);
+    --sc-danger: color-mix(in srgb, #d6403a 64%, var(--sc-ink));
+    /* pressed Yes: moss pulled toward ink, which darkens it on light paper and lightens it on dark paper */
+    --sc-moss-deep: color-mix(in srgb, var(--sc-moss) 78%, var(--sc-ink));
+  }
+}
+@supports (color: oklch(from red l c h)) {
+  .sc-layer,
+  .sc-ui {
+    --sc-on-pink: oklch(from var(--sc-pink) clamp(0, (0.56 - l) * 1000, 1) 0 0);
+  }
 }
 
 .sc-layer *,
@@ -98,7 +123,7 @@ mark.sc-mark:focus-visible {
 .sc-btn--primary {
   background: var(--sc-blue);
   border-color: var(--sc-blue);
-  color: #fff;
+  color: var(--sc-on-accent);
 }
 .sc-btn--ghost {
   background: transparent;
@@ -255,6 +280,12 @@ mark.sc-mark--pending {
   background: rgba(45, 79, 216, 0.22);
   cursor: text;
 }
+@supports (background: color-mix(in srgb, red 50%, blue)) {
+  mark.sc-mark--pending { background: color-mix(in srgb, var(--riso-blue, #2d4fd8) 26%, transparent); }
+}
+/* A mood preview can put light ink on dark paper whatever the system theme; multiply would sink the mark into
+   that paper, so under any mood the mark uses plain alpha (overlaps still deepen as the layers stack). */
+html[data-mood] mark.sc-mark { mix-blend-mode: normal; }
 mark.sc-mark--hot {
   background: var(--mark-hot, rgba(255, 79, 163, 0.35));
 }
@@ -434,7 +465,7 @@ mark.sc-mark--hot {
   width: 18px;
   height: 18px;
   color: var(--sc-ink);
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 1px 1px var(--sc-cursor-shadow));
   animation: sc-tut-cursor 7s var(--sc-ease) infinite;
   pointer-events: none;
 }
@@ -577,7 +608,7 @@ mark.sc-mark--hot {
   cursor: pointer;
   animation: sc-pop 0.18s var(--sc-ease);
 }
-.sc-pill:hover { background: var(--sc-blue); border-color: var(--sc-blue); color: #fff; }
+.sc-pill:hover { background: var(--sc-blue); border-color: var(--sc-blue); color: var(--sc-on-accent); }
 .sc-pill[hidden] { display: none; }
 .sc-pill--hint {
   background: var(--sc-paper-2);
@@ -841,14 +872,14 @@ mark.sc-mark--hot {
   flex: none;
 }
 .sc-stance-btn:hover { border-color: var(--sc-ink); transform: translateY(-1px); }
-.sc-stance-btn[aria-pressed="true"] { color: #fff; }
+.sc-stance-btn[aria-pressed="true"] { color: var(--sc-on-accent); }
 .sc-stance-btn[aria-pressed="true"]::before { background: currentColor; }
 .sc-stance-btn--yes[aria-pressed="true"] { background: var(--sc-moss); border-color: var(--sc-moss); }
 @supports (background: color-mix(in srgb, red 50%, blue)) {
   .sc-stance-btn--yes[aria-pressed="true"] { background: var(--sc-moss-deep); border-color: var(--sc-moss-deep); }
 }
 .sc-stance-btn--maybe[aria-pressed="true"] { background: var(--sc-ink-soft); border-color: var(--sc-ink-soft); }
-.sc-stance-btn--cut[aria-pressed="true"] { background: var(--sc-pink); border-color: var(--sc-pink); color: var(--sc-ink); }
+.sc-stance-btn--cut[aria-pressed="true"] { background: var(--sc-pink); border-color: var(--sc-pink); color: var(--sc-on-pink); }
 .sc-stance-tally {
   margin-top: 8px;
   font-family: var(--sc-mono);
@@ -957,6 +988,13 @@ mark.sc-mark--hot {
   -webkit-overflow-scrolling: touch;
 }
 .sc-drawer-group { margin: 0 0 18px; display: grid; gap: 8px; }
+.sc-drawer-group--votes { padding-top: 12px; border-top: 1px dashed var(--sc-line); }
+.sc-entry--vote .sc-entry-body {
+  font-family: var(--sc-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+  color: var(--sc-ink-soft);
+}
 .sc-drawer-group-title {
   margin: 4px 0 2px;
   font-family: var(--sc-mono);
@@ -1008,7 +1046,7 @@ mark.sc-mark--hot {
   animation: sc-rise 0.22s var(--sc-ease);
   transition: opacity 0.25s, transform 0.25s;
 }
-.sc-toast--error { background: var(--sc-pink); color: var(--sc-ink); }
+.sc-toast--error { background: var(--sc-pink); color: var(--sc-on-pink); }
 .sc-toast--out { opacity: 0; transform: translateY(6px); }
 @media (max-width: 639.98px) {
   /* above the Notes button (and level with the pill bar), so a toast never hides it */
@@ -1036,34 +1074,32 @@ mark.sc-mark--hot {
   :root:not([data-theme="light"]) .sc-layer,
   :root:not([data-theme="light"]) .sc-ui {
     --sc-scrim: rgba(0, 0, 0, 0.5);
-    --sc-gate-scrim: rgba(21, 20, 31, 0.72);
-    --sc-selection: rgba(138, 160, 255, 0.3);
-    --sc-danger: #ff8a86;
-    --sc-moss-deep: var(--sc-moss);
   }
   :root:not([data-theme="light"]) mark.sc-mark { mix-blend-mode: normal; }
-  :root:not([data-theme="light"]) mark.sc-mark--pending { background: rgba(138, 160, 255, 0.3); }
-  :root:not([data-theme="light"]) .sc-btn--primary { color: var(--sc-paper); }
-  :root:not([data-theme="light"]) .sc-stance-btn[aria-pressed="true"] { color: var(--sc-paper); }
-  :root:not([data-theme="light"]) .sc-stance-btn--cut[aria-pressed="true"] { color: var(--sc-paper); }
-  :root:not([data-theme="light"]) .sc-pill:hover { color: var(--sc-paper); }
-  :root:not([data-theme="light"]) .sc-toast--error { color: var(--sc-paper); }
+  @supports not (background: color-mix(in srgb, red 50%, blue)) {
+    :root:not([data-theme="light"]) .sc-layer,
+    :root:not([data-theme="light"]) .sc-ui {
+      --sc-gate-scrim: rgba(21, 20, 31, 0.72);
+      --sc-selection: rgba(138, 160, 255, 0.3);
+      --sc-danger: #ff8a86;
+    }
+    :root:not([data-theme="light"]) mark.sc-mark--pending { background: rgba(138, 160, 255, 0.3); }
+  }
 }
 :root[data-theme="dark"] .sc-layer,
 :root[data-theme="dark"] .sc-ui {
   --sc-scrim: rgba(0, 0, 0, 0.5);
-  --sc-gate-scrim: rgba(21, 20, 31, 0.72);
-  --sc-selection: rgba(138, 160, 255, 0.3);
-  --sc-danger: #ff8a86;
-  --sc-moss-deep: var(--sc-moss);
 }
 :root[data-theme="dark"] mark.sc-mark { mix-blend-mode: normal; }
-:root[data-theme="dark"] mark.sc-mark--pending { background: rgba(138, 160, 255, 0.3); }
-:root[data-theme="dark"] .sc-btn--primary { color: var(--sc-paper); }
-:root[data-theme="dark"] .sc-stance-btn[aria-pressed="true"] { color: var(--sc-paper); }
-:root[data-theme="dark"] .sc-stance-btn--cut[aria-pressed="true"] { color: var(--sc-paper); }
-:root[data-theme="dark"] .sc-pill:hover { color: var(--sc-paper); }
-:root[data-theme="dark"] .sc-toast--error { color: var(--sc-paper); }
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  :root[data-theme="dark"] .sc-layer,
+  :root[data-theme="dark"] .sc-ui {
+    --sc-gate-scrim: rgba(21, 20, 31, 0.72);
+    --sc-selection: rgba(138, 160, 255, 0.3);
+    --sc-danger: #ff8a86;
+  }
+  :root[data-theme="dark"] mark.sc-mark--pending { background: rgba(138, 160, 255, 0.3); }
+}
 
 /* ------------------------------------------------------------------ reduced motion */
 

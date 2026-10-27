@@ -33,6 +33,14 @@
   var QUOTE_DISPLAY = 240;
   var CONTEXT_CHARS = 32;
 
+  // auto-update (see the "auto-update" section)
+  var STORAGE_UPDATE_SCROLL = "sc.updateScroll";
+  var STORAGE_UPDATE_GUARD = "sc.updateGuard";
+  var UPDATE_GUARD_MS = 2 * 60 * 1000;
+  var UPDATE_WATCH_MS = 1000;
+  var UPDATE_SCROLL_TTL = 10 * 60 * 1000;
+  var BUILD_RE = /^[0-9a-f]{6,64}$/;
+
   var TUTORIAL_COPY = {
     before: "The image that sells it: walking off the path into a little bit of forest ",
     highlight: "because you heard something",
@@ -128,6 +136,18 @@
   }
   function storageRemove(key) {
     try { window.localStorage.removeItem(key); } catch (_) { /* ignore */ }
+  }
+  function sessionGet(key) {
+    try {
+      var raw = window.sessionStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  }
+  function sessionSet(key, value) {
+    try { window.sessionStorage.setItem(key, JSON.stringify(value)); return true; } catch (_) { return false; }
+  }
+  function sessionRemove(key) {
+    try { window.sessionStorage.removeItem(key); } catch (_) { /* ignore */ }
   }
 
   function randomHex16() {
@@ -266,6 +286,8 @@
 
   // ------------------------------------------------------------------ transport
 
+  var writesInFlight = 0; // POST/PATCH requests not yet settled
+
   function api(table, query, opts) {
     opts = opts || {};
     var url = BASE + "/rest/v1/" + table + (query || "");
@@ -284,6 +306,9 @@
       init.signal = ctrl.signal;
       timer = setTimeout(function () { try { ctrl.abort(); } catch (_) { /* ignore */ } }, FETCH_TIMEOUT);
     }
+    // A write in flight holds back an automatic reload, so a vote or note is never cut off mid-request.
+    var writing = init.method !== "GET";
+    if (writing) writesInFlight++;
     return fetch(url, init)
       .then(function (res) {
         return res.text().then(function (text) {
@@ -307,7 +332,10 @@
         }
         throw err;
       })
-      .finally(function () { if (timer) clearTimeout(timer); });
+      .finally(function () {
+        if (timer) clearTimeout(timer);
+        if (writing) writesInFlight = Math.max(0, writesInFlight - 1);
+      });
   }
 
   function rowBelongsHere(row) {
@@ -1723,19 +1751,50 @@
     return seen;
   }
 
+  function stanceOptionsFor(mount) {
+    // data-stance-labels="Love it|Maybe|Not this" relabels the three buttons (yes|maybe|cut order) for one mount.
+    // The stored values stay yes/maybe/cut. Anything other than three non-empty labels falls back to the defaults.
+    var raw = mount ? mount.getAttribute("data-stance-labels") : null;
+    if (!raw) return STANCE_OPTIONS;
+    var parts = String(raw).split("|").map(function (p) { return collapseWs(p).slice(0, 40); });
+    if (parts.length !== STANCE_OPTIONS.length || parts.some(function (p) { return !p; })) return STANCE_OPTIONS;
+    return STANCE_OPTIONS.map(function (opt, i) { return { value: opt.value, label: parts[i], short: parts[i] }; });
+  }
+
+  function stanceTitleOf(mount) {
+    return collapseWs(mount.getAttribute("data-stance-title") || mount.getAttribute("data-stance") || "");
+  }
+
+  function tallyParts(perKey, options, onlyKey) {
+    // "Love it: Kellen R., Israel H." per option that has votes, in button order.
+    var parts = [];
+    options.forEach(function (opt) {
+      var names = [];
+      perKey.forEach(function (row, key) {
+        if (onlyKey && key !== onlyKey) return;
+        if (row.stance === opt.value) names.push(nameOfRow(row));
+      });
+      if (names.length) parts.push(opt.short + ": " + names.join(", "));
+    });
+    return parts;
+  }
+
   function renderStances() {
     var latest = latestStances();
     var me = currentKey();
     Array.prototype.forEach.call(document.querySelectorAll("[data-stance]"), function (mount) {
       var target = mount.getAttribute("data-stance");
       if (!target) return;
+      var options = stanceOptionsFor(mount);
+      var custom = options !== STANCE_OPTIONS;
       if (!mount.dataset.scMounted) {
         mount.dataset.scMounted = "1";
         mount.classList.add("sc-ui", "sc-stance");
-        var title = mount.getAttribute("data-stance-title") || target;
-        var group = h("div", { class: "sc-stance-row", role: "group", "aria-label": "Your stance on " + title });
-        STANCE_OPTIONS.forEach(function (opt) {
-          var b = h("button", { type: "button", class: "sc-stance-btn sc-stance-btn--" + opt.value, dataset: { value: opt.value }, "aria-pressed": "false", text: opt.label });
+        if (custom) mount.classList.add("sc-stance--labelled");
+        var title = stanceTitleOf(mount) || target;
+        var group = h("div", { class: "sc-stance-row", role: "group", "aria-label": (custom ? "Your vote on " : "Your stance on ") + title });
+        options.forEach(function (opt) {
+          var b = h("button", { type: "button", class: "sc-stance-btn sc-stance-btn--" + opt.value, dataset: { value: opt.value }, "aria-pressed": "false", "aria-label": opt.label + ", " + title, text: opt.label });
           b.addEventListener("click", function () { vote(target, opt.value, mount); });
           group.appendChild(b);
         });
@@ -1749,12 +1808,7 @@
         b.setAttribute("aria-pressed", b.dataset.value === mine ? "true" : "false");
       });
       var tally = mount.querySelector(".sc-stance-tally");
-      var parts = [];
-      STANCE_OPTIONS.forEach(function (opt) {
-        var names = [];
-        perKey.forEach(function (row) { if (row.stance === opt.value) names.push(nameOfRow(row)); });
-        if (names.length) parts.push(opt.short + ": " + names.join(", "));
-      });
+      var parts = tallyParts(perKey, options, null);
       // Rewrite the live region only when its text changed, so screen readers do not re-announce every refresh.
       var wanted = parts.length ? parts.join(" · ") : "No votes yet.";
       if (tally.textContent === wanted) return;
@@ -1859,6 +1913,7 @@
     var inDrawer = !!(active && ui.drawer.contains(active));
     var keepNote = inDrawer && active.dataset && active.dataset.note ? String(active.dataset.note) : null;
     var keepFilter = inDrawer && active.classList.contains("sc-filter") ? (active.dataset.key || "") : null;
+    var keepStance = inDrawer && active.dataset && active.dataset.stance ? String(active.dataset.stance) : null;
 
     // filter chips
     var chips = ui.drawerFilters;
@@ -1887,7 +1942,8 @@
     var notes = visibleRootNotes().filter(function (note) { return !state.filter || note.reviewer_key === state.filter; });
     if (!notes.length) {
       body.appendChild(h("p", { class: "sc-empty", text: n ? "No notes from this reviewer." : "No notes yet. Highlight a few words to leave the first one." }));
-      restoreDrawerFocus(keepNote, keepFilter);
+      appendVotesGroup(body);
+      restoreDrawerFocus(keepNote, keepFilter, keepStance);
       return;
     }
     var groups = new Map();
@@ -1918,17 +1974,56 @@
       list.forEach(function (note) { sec.appendChild(drawerEntry(note)); });
       body.appendChild(sec);
     });
-    restoreDrawerFocus(keepNote, keepFilter);
+    appendVotesGroup(body);
+    restoreDrawerFocus(keepNote, keepFilter, keepStance);
   }
 
-  function restoreDrawerFocus(noteId, filterKey) {
+  function appendVotesGroup(body) {
+    // Votes on the mounts that carry their own labels (the design options), so the look can be read at a glance
+    // next to the notes. Same labels as the buttons; follows the reviewer filter.
+    var latest = latestStances();
+    var entries = [];
+    Array.prototype.forEach.call(document.querySelectorAll("[data-stance][data-stance-labels]"), function (mount) {
+      var target = mount.getAttribute("data-stance");
+      var options = stanceOptionsFor(mount);
+      if (!target || options === STANCE_OPTIONS) return;
+      var parts = tallyParts(latest.get(target) || new Map(), options, state.filter);
+      if (!parts.length) return;
+      var title = stanceTitleOf(mount) || target;
+      var entry = h("button", { type: "button", class: "sc-entry sc-entry--vote", dataset: { stance: target } },
+        h("span", { class: "sc-entry-meta" },
+          h("span", { class: "sc-name", text: title }),
+          h("span", { class: "sc-tag", text: "Vote" })
+        ),
+        h("span", { class: "sc-entry-body", text: parts.join(" · ") })
+      );
+      entry.addEventListener("click", function () {
+        closeDrawer();
+        mount.scrollIntoView({ block: "center", behavior: reducedMotion() ? "auto" : "smooth" });
+        flash(mount, null);
+        var first = mount.querySelector(".sc-stance-btn");
+        setTimeout(function () { try { if (first) first.focus({ preventScroll: true }); } catch (_) { /* ignore */ } }, 0);
+      });
+      entries.push(entry);
+    });
+    if (!entries.length) return;
+    var sec = h("section", { class: "sc-drawer-group sc-drawer-group--votes" });
+    sec.appendChild(h("h3", { class: "sc-drawer-group-title", text: "Votes on the look" }));
+    entries.forEach(function (e) { sec.appendChild(e); });
+    body.appendChild(sec);
+  }
+
+  function restoreDrawerFocus(noteId, filterKey, stanceId) {
     // The drawer is rebuilt on every change; put focus back on the same entry or chip when it was there.
-    if (noteId === null && filterKey === null) return;
+    if (noteId === null && filterKey === null && (stanceId === null || stanceId === undefined)) return;
     var target = null;
-    var pool = noteId !== null ? ui.drawerBody.querySelectorAll(".sc-entry[data-note]") : ui.drawerFilters.querySelectorAll(".sc-filter");
+    var pool = noteId !== null ? ui.drawerBody.querySelectorAll(".sc-entry[data-note]")
+      : (filterKey !== null ? ui.drawerFilters.querySelectorAll(".sc-filter") : ui.drawerBody.querySelectorAll(".sc-entry[data-stance]"));
     Array.prototype.forEach.call(pool, function (el) {
       if (target) return;
-      if (noteId !== null ? el.dataset.note === noteId : (el.dataset.key || "") === filterKey) target = el;
+      if (noteId !== null) { if (el.dataset.note === noteId) target = el; }
+      else if (filterKey !== null) { if ((el.dataset.key || "") === filterKey) target = el; }
+      else if (el.dataset.stance === stanceId) target = el;
     });
     if (!target) target = ui.drawer.querySelector(".sc-x");
     if (target) { try { target.focus({ preventScroll: true }); } catch (_) { /* ignore */ } }
@@ -2175,9 +2270,15 @@
     }
 
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible" && state.loaded) refresh();
+      if (document.visibilityState !== "visible") return;
+      if (state.loaded) refresh();
+      checkForUpdate();
     });
-    setInterval(function () { if (document.visibilityState === "visible" && state.loaded) refresh(); }, REFRESH_MS);
+    setInterval(function () {
+      if (document.visibilityState !== "visible") return;
+      if (state.loaded) refresh();
+      checkForUpdate();
+    }, REFRESH_MS);
   }
 
   function openMarkThread(mark) {
@@ -2189,6 +2290,164 @@
       el = el.parentElement;
     }
     openThread(id, mark, others);
+  }
+
+  // ------------------------------------------------------------------ auto-update
+
+  // The page carries its build in <meta name="sc-build">, and version.json (fetched past every cache) names the
+  // build that is live. When they differ the page reloads itself at ?v=<build>, which misses the CDN and browser
+  // caches, unless the reviewer is in the middle of something; then it waits for that to finish. A reload never
+  // repeats within UPDATE_GUARD_MS, so a CDN that still serves the old page cannot start a loop.
+  var update = {
+    loaded: null, // build of this page, from the meta tag; null turns the feature off
+    pending: null, // newer build seen in version.json, waiting to load
+    checking: false,
+    navigating: false,
+    notified: false, // the "loads when you finish" toast was shown
+    watch: 0, // interval that waits for the reviewer to finish
+    bootAt: 0,
+    cameFromReload: false, // this page load is the result of an automatic reload
+    arrived: false, // show "Updated to the latest plan." once marks are drawn
+    restoreY: null, // scroll position to put back after the reload
+  };
+
+  function readLoadedBuild() {
+    var meta = document.querySelector('meta[name="sc-build"]');
+    var v = meta ? String(meta.getAttribute("content") || "").trim().toLowerCase() : "";
+    return BUILD_RE.test(v) ? v : null;
+  }
+
+  function initUpdates() {
+    update.loaded = readLoadedBuild();
+    if (!update.loaded) return;
+    update.bootAt = Date.now();
+    var guard = sessionGet(STORAGE_UPDATE_GUARD);
+    if (guard && guard.to === update.loaded) sessionRemove(STORAGE_UPDATE_GUARD); // landed on the build it went for
+
+    var arrivedV = null;
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (params.has("v")) {
+        arrivedV = String(params.get("v") || "").trim().toLowerCase();
+        params.delete("v");
+        var qs = params.toString();
+        window.history.replaceState(window.history.state, "", window.location.pathname + (qs ? "?" + qs : "") + window.location.hash);
+      }
+    } catch (_) { /* leave the URL as it is */ }
+
+    var saved = sessionGet(STORAGE_UPDATE_SCROLL);
+    sessionRemove(STORAGE_UPDATE_SCROLL);
+    if (arrivedV === null) return;
+    update.cameFromReload = true;
+    update.arrived = arrivedV === update.loaded; // a CDN still serving the old page is not an update
+    if (saved && typeof saved.y === "number" && isFinite(saved.y) && saved.y >= 0 && typeof saved.at === "number" && Math.abs(Date.now() - saved.at) < UPDATE_SCROLL_TTL) {
+      update.restoreY = Math.round(saved.y);
+    }
+  }
+
+  function finishArrival() {
+    // Runs once the first render (marks included) is on the page.
+    if (update.restoreY !== null) {
+      var y = update.restoreY;
+      update.restoreY = null;
+      try { window.scrollTo(0, y); } catch (_) { /* ignore */ }
+      if (document.readyState !== "complete") {
+        // Fonts and images can still grow the page; if the first scroll was cut short and the reviewer has not
+        // moved since, finish it when everything has loaded.
+        var landed = window.scrollY || window.pageYOffset || 0;
+        window.addEventListener("load", function () {
+          var now = window.scrollY || window.pageYOffset || 0;
+          if (Math.abs(now - landed) < 2 && Math.abs(now - y) >= 2) { try { window.scrollTo(0, y); } catch (_) { /* ignore */ } }
+        }, { once: true });
+      }
+    }
+    if (update.arrived) {
+      update.arrived = false;
+      toast("Updated to the latest plan.");
+    }
+  }
+
+  function updateGuarded() {
+    var now = Date.now();
+    if (update.cameFromReload && now - update.bootAt < UPDATE_GUARD_MS) return true;
+    var guard = sessionGet(STORAGE_UPDATE_GUARD);
+    return !!(guard && typeof guard.at === "number" && now - guard.at >= 0 && now - guard.at < UPDATE_GUARD_MS);
+  }
+
+  function updateBlocker() {
+    // What the reviewer is in the middle of, if anything:
+    //   "draft": an open note composer, a passage picked for a note, an open remove confirm, or any
+    //            review-layer field (gate name, reply, general note) holding typed text;
+    //   "busy":  a request still saving, or the gate's how-to step on screen (both finish on their own).
+    var fields = document.querySelectorAll(".sc-layer textarea, .sc-layer input, .sc-ui textarea, .sc-ui input");
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      var type = String(f.type || "text").toLowerCase();
+      if (f.tagName === "INPUT" && ["text", "search", "email", "url", "tel", ""].indexOf(type) < 0) continue;
+      if (String(f.value || "").trim()) return "draft";
+    }
+    if (ui.composer) return "draft";
+    if (ui.pill && !ui.pill.hidden && state.pendingAnchor) return "draft";
+    if (ui.thread && state.confirmingId !== null) return "draft";
+    if (writesInFlight > 0) return "busy";
+    if (ui.gate && !ui.gate.querySelector("input")) return "busy";
+    return null;
+  }
+
+  function stopUpdateWatch() {
+    if (update.watch) clearInterval(update.watch);
+    update.watch = 0;
+  }
+
+  function applyUpdate() {
+    var b = update.pending;
+    if (!b || update.navigating) return false;
+    if (updateGuarded()) { stopUpdateWatch(); return false; } // just reloaded; the next refresh tries again
+    var blocker = updateBlocker();
+    if (blocker) {
+      if (blocker === "draft" && !update.notified) {
+        update.notified = true;
+        toast("A newer version of the plan is out. It loads when you finish this note.", { ttl: 9000 });
+      }
+      if (!update.watch) update.watch = setInterval(applyUpdate, UPDATE_WATCH_MS);
+      return false;
+    }
+    stopUpdateWatch();
+    update.navigating = true;
+    var href = window.location.pathname + "?v=" + encodeURIComponent(b) + window.location.hash;
+    sessionSet(STORAGE_UPDATE_SCROLL, { y: Math.round(window.scrollY || window.pageYOffset || 0), at: Date.now() });
+    sessionSet(STORAGE_UPDATE_GUARD, { from: update.loaded, to: b, at: Date.now(), href: href });
+    try { window.location.replace(href); } catch (_) { update.navigating = false; }
+    return true;
+  }
+
+  function checkForUpdate() {
+    if (!update.loaded || update.checking || update.navigating) return Promise.resolve();
+    update.checking = true;
+    var ctrl = null;
+    var timer = null;
+    try { ctrl = new AbortController(); } catch (_) { ctrl = null; }
+    var init = { cache: "no-store", headers: { Accept: "application/json" } };
+    if (ctrl) {
+      init.signal = ctrl.signal;
+      timer = setTimeout(function () { try { ctrl.abort(); } catch (_) { /* ignore */ } }, FETCH_TIMEOUT);
+    }
+    var p;
+    try { p = Promise.resolve(fetch("version.json?t=" + Date.now(), init)); } catch (err) { p = Promise.reject(err); }
+    return p
+      .then(function (res) { return res && res.ok ? res.json() : null; })
+      .then(function (data) {
+        var b = data && typeof data.build === "string" ? data.build.trim().toLowerCase() : "";
+        if (!BUILD_RE.test(b)) return;
+        if (b === update.loaded) { update.pending = null; stopUpdateWatch(); return; }
+        update.pending = b;
+        applyUpdate();
+      })
+      .catch(function () { /* offline or no version.json: try again on the next refresh */ })
+      .finally(function () {
+        if (timer) clearTimeout(timer);
+        update.checking = false;
+      });
   }
 
   // ------------------------------------------------------------------ data flow
@@ -2285,6 +2544,7 @@
   }
 
   function boot() {
+    initUpdates();
     buildLayer();
     indexPage();
     renderSectionLinks();
@@ -2294,6 +2554,8 @@
     state.reviewer = loadReviewer();
     renderChip();
     if (state.reviewer) recordVisit(false); else openGate(1);
+    // A cached copy of an older page catches up right away, before the reviewer starts reading.
+    checkForUpdate();
 
     var issued = Date.now();
     Promise.allSettled([fetchNotes(), fetchStances(), fetchVisits()]).then(function (results) {
@@ -2303,6 +2565,7 @@
       state.loaded = true;
       renderAll();
       renderReviewers();
+      finishArrival();
       var failed = results.filter(function (r) { return r.status === "rejected"; }).length;
       if (failed === 3) toast("Couldn't load notes. Reload to try again.", { kind: "error" });
       else if (failed) toast("Some notes may be missing. Reload to try again.", { kind: "error" });

@@ -14,6 +14,7 @@ Anyone who opens it enters a first and last name once. From then on every highli
 | `assets/site.css` | the design: tokens, type, grain, rings, both themes |
 | `assets/review.js`, `assets/review.css` | the review layer: name gate, highlight-to-note, replies, votes, the Notes drawer, the how-to animation |
 | `assets/config.js` | Supabase URL, publishable key, table names |
+| `version.json` | the current build stamp (generated); open pages poll it and reload after a deploy |
 | `content/plan.json` | the copy, block by block, with stable ids (source of truth) |
 | `content/PLAN.md` | the same plan as plain markdown |
 | `content/drafts/` | the three angle drafts the plan was synthesized from |
@@ -23,6 +24,8 @@ Anyone who opens it enters a first and last name once. From then on every highli
 | `docs/REVIEW-GUIDE.md` | how to read the notes and votes back out of Supabase |
 | `supabase/migrations/` | the schema and row-level security for the notes tables |
 | `dev/` | `build-page.mjs` (renders `index.html` from `plan.json`), `render-check.mjs` (verifies they agree), and `engine-test.html` (a bare page for testing the review layer) |
+| `dev/phone/` | the phone mockups on the design calls: `frame.mjs` (the device), `kit.mjs` (helpers), `screens-*.mjs` (the screens) and `CONTRACT.md` (how to draw one) |
+| `dev/phone-gallery.html` | generated dev aid: every phone pair with mood, theme and size switches; the page never links to it |
 
 ## Where the notes live
 
@@ -35,6 +38,8 @@ Supabase project `ad-labs`, tables `secret_cloud_notes`, `secret_cloud_stances`,
 ```bash
 node dev/build-page.mjs && node dev/render-check.mjs
 ```
+
+Every build also stamps the page: a short hash of the sources goes in `<meta name="sc-build">`, on every asset URL as `?v=`, and in `version.json`. After a deploy, pages already open notice the new `version.json` and reload themselves, so everyone reads the current plan. `render-check.mjs` fails if the stamp is stale, so rebuild after any change to the stamped files.
 
 Keep every block `id` as it is; notes are anchored to them. Add new paragraphs with new ids. Layout and microcopy (diagram labels, captions, stance titles) live in `dev/build-page.mjs`. Mirror copy changes in `content/PLAN.md`.
 

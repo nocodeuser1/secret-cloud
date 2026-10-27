@@ -144,6 +144,49 @@
           "html": "Vote on each pillar, and leave a note where you would say it differently."
         },
         {
+          "type": "design",
+          "id": "vision-design-look",
+          "call": "look",
+          "short": "The look",
+          "eyebrow": "DESIGN CALL",
+          "title": "What the whole thing looks like",
+          "html": "Kellen, the look of this is yours to steer, and these four are a starting point to push against. Each one shows the app on a phone, light and dark side by side. Tap Try it on the page to wear one across this whole plan, vote Love it, Maybe or Not this on each, and highlight any line to say what you would change.",
+          "options": [
+            {
+              "key": "riso",
+              "id": "vision-design-look-riso",
+              "name": "Riso zine",
+              "html": "What you are reading now: paper stock, two inks that never quite line up, and rings everywhere.",
+              "stance": "design-look-riso",
+              "mood": "riso"
+            },
+            {
+              "key": "night-walk",
+              "id": "vision-design-look-night-walk",
+              "name": "Night walk",
+              "html": "The park after dark. Deep forest green, lantern amber and moss, with type you can read by the light of a phone.",
+              "stance": "design-look-night-walk",
+              "mood": "night-walk"
+            },
+            {
+              "key": "field-kit",
+              "id": "vision-design-look-field-kit",
+              "name": "Field kit",
+              "html": "Cream stock, safety orange and mono tape labels, like gear packed for a long day in the woods.",
+              "stance": "design-look-field-kit",
+              "mood": "field-kit"
+            },
+            {
+              "key": "kingdom-glass",
+              "id": "vision-design-look-kingdom-glass",
+              "name": "Kingdom glass",
+              "html": "Deep blue and gold, with warm light coming through like a stained-glass window. Only for the kingdom.",
+              "stance": "design-look-kingdom-glass",
+              "mood": "kingdom-glass"
+            }
+          ]
+        },
+        {
           "type": "h3",
           "id": "vision-pillar-1-h3",
           "text": "Drops and soundscapes",
@@ -164,6 +207,45 @@
           "type": "diagram",
           "id": "vision-diagram-rings",
           "name": "rings"
+        },
+        {
+          "type": "design",
+          "id": "vision-design-drop",
+          "call": "drop",
+          "short": "Drops on the map",
+          "eyebrow": "DESIGN CALL",
+          "title": "How a drop shows on the map",
+          "html": "The diagram above is how I picture a drop from the air. On the phone it could be drawn a few ways, or left off the map entirely.",
+          "options": [
+            {
+              "key": "rings",
+              "id": "vision-design-drop-rings",
+              "name": "Rings",
+              "html": "The outer and inner ring drawn as they are, so you can see where the sound starts and where it is loudest.",
+              "stance": "design-drop-rings"
+            },
+            {
+              "key": "glow",
+              "id": "vision-design-drop-glow",
+              "name": "Soft glow",
+              "html": "A bloom of colour with no hard edge, brighter toward the middle, like a lantern seen through fog.",
+              "stance": "design-drop-glow"
+            },
+            {
+              "key": "hidden",
+              "id": "vision-design-drop-hidden",
+              "name": "Nothing until you hear it",
+              "html": "The map stays blank where a drop sits. It appears only after you have walked into it.",
+              "stance": "design-drop-hidden"
+            },
+            {
+              "key": "inked",
+              "id": "vision-design-drop-inked",
+              "name": "Hand-inked mark",
+              "html": "A small drawn mark for each drop, a little uneven, as if someone marked the map by hand.",
+              "stance": "design-drop-inked"
+            }
+          ]
         },
         {
           "type": "h3",
@@ -198,6 +280,45 @@
           "type": "p",
           "id": "vision-pillar-3-p-2",
           "html": "Inside the radius during the show, they can enter an app experience with the band. There were two ideas: letting the crowd alter the effects, which came up on the call as a probable disaster with many people, or visuals on loop that match the vibe of that area, generated monthly with a few hours of AI video work. There is a reward for showing up that nobody else gets, like a recording of that live set. Follow the band in the app and get notified each month."
+        },
+        {
+          "type": "design",
+          "id": "vision-design-invite",
+          "call": "invite",
+          "short": "Show invite",
+          "eyebrow": "DESIGN CALL",
+          "title": "What a secret-show invite looks like",
+          "html": "The QR code is the invitation, so the thing it is printed on carries the mood. This is what someone might find pinned to a board or tucked into a library book.",
+          "options": [
+            {
+              "key": "stub",
+              "id": "vision-design-invite-stub",
+              "name": "Ticket stub",
+              "html": "A torn stub with a perforated edge, a date, and the code where the seat number would go.",
+              "stance": "design-invite-stub"
+            },
+            {
+              "key": "note",
+              "id": "vision-design-invite-note",
+              "name": "Handwritten note",
+              "html": "A folded card in someone's handwriting, with the code drawn small in one corner.",
+              "stance": "design-invite-note"
+            },
+            {
+              "key": "black",
+              "id": "vision-design-invite-black",
+              "name": "Plain black card",
+              "html": "One black card, one white code, nothing else on it. You scan it or you keep walking.",
+              "stance": "design-invite-black"
+            },
+            {
+              "key": "photo",
+              "id": "vision-design-invite-photo",
+              "name": "Photo print",
+              "html": "A small print of the place itself with the code on the back, so the picture is the clue.",
+              "stance": "design-invite-photo"
+            }
+          ]
         },
         {
           "type": "h3",
@@ -293,6 +414,45 @@
           "type": "p",
           "id": "vision-walk-p-8",
           "html": "Then a branch snaps behind me. Someone in a grey hoodie comes through the same gap in the trees, earbuds in, listening. They stop where the violin comes in, and I watch their face change."
+        },
+        {
+          "type": "design",
+          "id": "vision-design-first",
+          "call": "first",
+          "short": "First screen",
+          "eyebrow": "DESIGN CALL",
+          "title": "The first thing you see",
+          "html": "In the walk above, the link opens a screen with one line on it. That is one guess at what someone meets after the sign, and here are four.",
+          "options": [
+            {
+              "key": "ring",
+              "id": "vision-design-first-ring",
+              "name": "Sound first",
+              "html": "One ring and a live level that rises as you get closer. A pulse to follow, with no map and no words.",
+              "stance": "design-first-ring"
+            },
+            {
+              "key": "map",
+              "id": "vision-design-first-map",
+              "name": "Map first",
+              "html": "A plain map of the park with a dot for you and a soft hint of which way to head.",
+              "stance": "design-first-map"
+            },
+            {
+              "key": "words",
+              "id": "vision-design-first-words",
+              "name": "Words first",
+              "html": "A single line, like something is playing to the north, and nothing else on the screen.",
+              "stance": "design-first-words"
+            },
+            {
+              "key": "dark",
+              "id": "vision-design-first-dark",
+              "name": "Near-black",
+              "html": "A screen that is almost off. Put the phone away and listen; it wakes only when something is close.",
+              "stance": "design-first-dark"
+            }
+          ]
         },
         {
           "type": "h3",
@@ -876,6 +1036,45 @@
           "n": 10,
           "html": "Should the app be free, always, with no way to pay?",
           "stance": "q-10"
+        },
+        {
+          "type": "design",
+          "id": "questions-design-mark",
+          "call": "mark",
+          "short": "The mark",
+          "eyebrow": "DESIGN CALL",
+          "title": "The mark on the home screen",
+          "html": "One more question, answered with a drawing. This is the small mark that sits on a phone and in the corner of every sign.",
+          "options": [
+            {
+              "key": "rings",
+              "id": "questions-design-mark-rings",
+              "name": "Rings cloud",
+              "html": "Three rings that soften into a cloud along the top, the drop and the name in one shape.",
+              "stance": "design-mark-rings"
+            },
+            {
+              "key": "rabbit",
+              "id": "questions-design-mark-rabbit",
+              "name": "White rabbit",
+              "html": "A small rabbit drawn in a single line. Follow it, and you know where that comes from.",
+              "stance": "design-mark-rabbit"
+            },
+            {
+              "key": "keyhole",
+              "id": "questions-design-mark-keyhole",
+              "name": "Keyhole",
+              "html": "A keyhole with rings inside, something private with an invitation to look through.",
+              "stance": "design-mark-keyhole"
+            },
+            {
+              "key": "wordmark",
+              "id": "questions-design-mark-wordmark",
+              "name": "Wordmark only",
+              "html": "No symbol at all. The Secret Cloud set in small mono type, quiet as a label.",
+              "stance": "design-mark-wordmark"
+            }
+          ]
         }
       ]
     },
@@ -890,6 +1089,38 @@
           "type": "p",
           "id": "marks-p-1",
           "html": "Every note you leave and every vote you cast on this page is stamped with your name and saved. I read all of it before the build starts, and it decides what gets built first. Highlight any line to leave a note on it. Vote Yes, Maybe or Cut it on the pillars, the trails, the phases and the questions. The box at the bottom is for everything else."
+        },
+        {
+          "type": "p",
+          "id": "marks-p-design",
+          "html": "Kellen, the look is yours. Five design calls are tucked into the plan as small phone mockups, each in light and dark. Try them, vote Love it, Maybe or Not this, and say in a note what you would change."
+        },
+        {
+          "type": "ul",
+          "id": "marks-design-ul",
+          "style": "jump",
+          "items": [
+            {
+              "id": "marks-design-li-look",
+              "html": "<a href=\"#vision-design-look\">The look of the whole thing</a>, four moods you can try on"
+            },
+            {
+              "id": "marks-design-li-drop",
+              "html": "<a href=\"#vision-design-drop\">How a drop shows on the map</a>, next to the rings"
+            },
+            {
+              "id": "marks-design-li-invite",
+              "html": "<a href=\"#vision-design-invite\">The secret-show invite card</a>, under the band account"
+            },
+            {
+              "id": "marks-design-li-first",
+              "html": "<a href=\"#vision-design-first\">The first screen</a>, after the walk"
+            },
+            {
+              "id": "marks-design-li-mark",
+              "html": "<a href=\"#questions-design-mark\">The mark on the home screen</a>, after the questions"
+            }
+          ]
         }
       ]
     }

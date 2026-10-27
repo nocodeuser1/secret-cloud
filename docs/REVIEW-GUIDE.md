@@ -62,6 +62,38 @@ order by target_id;
 
 Stance ids: `pillar-1..5` (the vision pillars), `trail-a..l` (rabbit trails), `phase-0..3` (build phases), `q-1..10` (open questions).
 
+Design stance ids: `design-<call>-<option>`, one per option on the five design calls. The buttons on those read Love it / Maybe / Not this, stored as `yes` / `maybe` / `cut` like every other vote.
+
+| call | where on the page | stance ids |
+|---|---|---|
+| `look` | Vision, after the intro (block `vision-design-look`) | `design-look-riso`, `design-look-night-walk`, `design-look-field-kit`, `design-look-kingdom-glass` |
+| `drop` | Vision, after the rings diagram (`vision-design-drop`) | `design-drop-rings`, `design-drop-glow`, `design-drop-hidden`, `design-drop-inked` |
+| `invite` | Vision, end of the band account pillar (`vision-design-invite`) | `design-invite-stub`, `design-invite-note`, `design-invite-black`, `design-invite-photo` |
+| `first` | Vision, after the walk (`vision-design-first`) | `design-first-ring`, `design-first-map`, `design-first-words`, `design-first-dark` |
+| `mark` | Questions, after question 10 (`questions-design-mark`) | `design-mark-rings`, `design-mark-rabbit`, `design-mark-keyhole`, `design-mark-wordmark` |
+
+Design votes by person (latest stance each, with the button words they saw):
+
+```sql
+with latest as (
+  select distinct on (target_id, reviewer_key)
+         target_id, reviewer_key, reviewer_first, reviewer_last, stance, created_at
+  from public.secret_cloud_stances
+  where target_id like 'design-%' and coalesce(site_version, '') <> 'test'
+  order by target_id, reviewer_key, created_at desc
+)
+select reviewer_first, reviewer_last,
+       split_part(target_id, '-', 2) as call,
+       substring(target_id from '^design-[a-z]+-(.*)$') as option,
+       case stance when 'yes' then 'Love it' when 'maybe' then 'Maybe' when 'cut' then 'Not this' end as vote,
+       created_at
+from latest
+where stance <> 'clear'
+order by reviewer_last, reviewer_first, call, option;
+```
+
+Notes on a design option anchor to its text block (`<call block id>-<option>`, for example `vision-design-look-night-walk`); notes on the call's intro anchor to the call block itself.
+
 ## Purging test rows
 
 ```sql

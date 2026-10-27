@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Review engine test</title>
+  <meta name="robots" content="noindex">
+  <style>
+    /* Stand-in for assets/site.css: the same tokens, so review.css can be checked in both themes. */
+    :root {
+      color-scheme: light;
+      --paper: #EDEBE3; --paper-2: #E3E0D5; --ink: #1C1B2E; --ink-soft: #55536A; --line: #C8C5B8;
+      --riso-blue: #2D4FD8; --riso-pink: #FF4FA3; --sunflower: #F2C230; --moss: #2F8B73;
+      --mark: rgba(242,194,48,.45); --mark-hot: rgba(255,79,163,.35);
+      --shadow: 0 10px 30px rgba(28,27,46,.14);
+      --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+      --font-body: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+      --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --paper: #15141F; --paper-2: #1E1C2B; --ink: #EDE9DE; --ink-soft: #B3AFC2; --line: #36344C;
+        --riso-blue: #8AA0FF; --riso-pink: #FF7CC0; --sunflower: #F7D35A; --moss: #5FC9AC;
+        --mark: rgba(247,211,90,.30); --mark-hot: rgba(255,124,192,.35);
+        --shadow: 0 10px 30px rgba(0,0,0,.5);
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --paper: #15141F; --paper-2: #1E1C2B; --ink: #EDE9DE; --ink-soft: #B3AFC2; --line: #36344C;
+      --riso-blue: #8AA0FF; --riso-pink: #FF7CC0; --sunflower: #F7D35A; --moss: #5FC9AC;
+      --mark: rgba(247,211,90,.30); --mark-hot: rgba(255,124,192,.35);
+      --shadow: 0 10px 30px rgba(0,0,0,.5);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 1.15rem;
+      line-height: 1.6;
+    }
+    .bar {
+      position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+      background: var(--paper); border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+    }
+    .bar nav { display: flex; gap: 14px; overflow-x: auto; }
+    .bar a { color: var(--riso-blue); text-decoration: none; }
+    .wrap {
+      max-width: 68ch; margin: 0 auto;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-block: 24px 120px;
+    }
+    section { padding: 24px 0; border-top: 1px solid var(--line); }
+    section:first-of-type { border-top: 0; }
+    h1, h2 { font-family: var(--font-display); font-variation-settings: "SOFT" 70, "WONK" 1; line-height: 1.05; text-wrap: balance; }
+    h1 { font-size: clamp(2.2rem, 7vw, 3.4rem); margin: .2em 0 .3em; }
+    h2 { font-size: clamp(1.7rem, 5vw, 2.4rem); margin: 0 0 .2em; }
+    .eyebrow { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+    .idea { margin: 1.5em 0; padding: 1em 1.1em; border: 1.5px solid var(--ink); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+    .idea h3 { margin: 0 0 .3em; font-family: var(--font-display); font-size: 1.4rem; }
+    a { color: var(--riso-blue); }
+    .tools { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-mono); font-size: .72rem; }
+    .tools button { font: inherit; padding: 6px 10px; border: 1px solid var(--line); background: var(--paper-2); color: var(--ink); border-radius: 999px; cursor: pointer; }
+    #review-reviewers { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-soft); margin-top: 8px; }
+  </style>
+  <link rel="stylesheet" href="../assets/review.css">
+</head>
+<body>
+  <div class="bar">
+    <span>The Secret Cloud · engine test</span>
+    <nav><a href="#idea">Idea</a><a href="#sides">Two sides</a><a href="#trails">Rabbit trails</a></nav>
+    <div id="review-identity"></div>
+  </div>
+
+  <main class="wrap">
+    <p class="eyebrow">dev/engine-test.html · site_version "test"</p>
+    <h1>Review engine test page</h1>
+    <div class="tools">
+      <button type="button" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">Toggle theme</button>
+      <button type="button" onclick="try{localStorage.removeItem('sc.reviewer');localStorage.removeItem('sc.lastVisit');}catch(e){} location.reload()">Forget me and reload</button>
+    </div>
+
+    <div id="review-tutorial"></div>
+
+    <section id="idea" data-section-title="The original idea">
+      <header>
+        <p class="eyebrow">Section one</p>
+        <h2>The original idea</h2>
+      </header>
+      <p data-block="idea-loops">Collect around fifty audio loops of varying lengths, all in a similar vibe. You now have fifty MP3s, and that is the whole raw material for the first drop.</p>
+      <p data-block="idea-park">Physically go to a place. The running example is <em>the park in Guthrie</em>, because it is close, it is quiet after dinner, and it has a hill with a stone on top.</p>
+      <p data-block="idea-rings">In the app's world model, place each loop at a spot, give it a radius of about thirty feet, a decibel level at the <a href="#idea">outer ring</a> and a decibel level at the inner ring. Even with no map at all, you could follow your ears and explore the whole area as a listening experience.</p>
+      <p data-block="idea-eggs">Easter eggs: put a very tight radius on a special object, like a stone on top of a hill. People notice "I wonder what that stone is saying", walk up, and hear something only there.</p>
+    </section>
+
+    <section id="sides" data-section-title="Two sides of one thing">
+      <header>
+        <p class="eyebrow">Section two</p>
+        <h2>Two sides of one thing</h2>
+      </header>
+      <p data-block="sides-walkin">The first side is the <em>walk-in sound experience</em> you can wander into and choose your own adventure. Instruments show as symbols on the map, and the violin gets louder as you walk toward the rock where it was played.</p>
+      <p data-block="sides-shows">The second side is secret live shows run from a band account. The app generates a QR code for the band, they post it around, and scanning it is the invite. Inside the radius during the show, you can enter an experience with the band.</p>
+      <p data-block="sides-phone">The phone tension is real: it is getting taboo to hold your phone during an experience. The answer both of them landed on is that the phone should lead you there and then <em>get out of the way</em>.</p>
+    </section>
+
+    <section id="trails" data-section-title="Rabbit trails">
+      <header>
+        <p class="eyebrow">Section three</p>
+        <h2>Rabbit trails</h2>
+      </header>
+      <p data-block="trails-intro">These are the ideas that came up and were not decided. Vote on each one. The latest vote per person wins, and clicking your current vote again clears it.</p>
+      <div class="idea">
+        <h3>A. Monthly drops</h3>
+        <p data-block="trails-monthly">Once a space is designed, you can drop a new experience into the same park every month, so people keep coming back. A city might love it because it brings people to the park.</p>
+        <div class="stance" data-stance="monthly-drops" data-stance-title="Monthly drops"></div>
+      </div>
+      <div class="idea">
+        <h3>B. Replies and testimonies</h3>
+        <p data-block="trails-replies">Listeners can reply to whoever set up the soundscape. Because the app is not set up as religious, a reply is just a reply, and testimonies from people who felt something would come in naturally. See the <a href="#sides">two sides</a> for how this fits.</p>
+        <div class="stance" data-stance="replies-testimonies" data-stance-title="Replies and testimonies"></div>
+      </div>
+    </section>
+
+    <section id="general-section" data-section-title="Anything else">
+      <header>
+        <h2>Anything else?</h2>
+      </header>
+      <div id="review-general"></div>
+      <div id="review-reviewers"></div>
+    </section>
+  </main>
+
+  <script src="../assets/config.js"></script>
+  <script>
+    // The test page always writes and reads site_version "test" so its rows can be purged.
+    if (window.SECRET_CLOUD_CONFIG) window.SECRET_CLOUD_CONFIG.siteVersion = "test";
+  </script>
+  <script defer src="../assets/review.js"></script>
+</body>
+</html>

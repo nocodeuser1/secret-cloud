@@ -1,6 +1,6 @@
 # Reading the notes back
 
-Everything reviewers leave on the plan site lands in three tables in the Supabase project **ad-labs** (`odcgntoecxmihaovxazf`): `secret_cloud_notes`, `secret_cloud_stances`, `secret_cloud_visits`. Each row carries the reviewer's first and last name, a `reviewer_key` (lowercase "first last"), a timestamp, and `site_version`.
+Everything reviewers leave on the plan site lands in the Supabase project **ad-labs** (`odcgntoecxmihaovxazf`): notes, votes and visits in `secret_cloud_notes`, `secret_cloud_stances`, `secret_cloud_visits`, and shared images in `secret_cloud_images` (files in the storage bucket `secret-cloud-design`). Each row carries the reviewer's first and last name, a `reviewer_key` (lowercase "first last"), a timestamp, and `site_version`.
 
 Rows with `site_version = 'test'` are test data and can be ignored or purged.
 
@@ -94,12 +94,68 @@ order by reviewer_last, reviewer_first, call, option;
 
 Notes on a design option anchor to its text block (`<call block id>-<option>`, for example `vision-design-look-night-walk`); notes on the call's intro anchor to the call block itself.
 
+## Images (design references and the moodboard)
+
+Images people share land in two places: the file in the public storage bucket **`secret-cloud-design`** (always under `uploads/YYYY-MM/<client id>-<random>.<ext>`), and a row in `public.secret_cloud_images` that says who shared it, for which call, and with what caption. `target_id` is the design card's id, or `moodboard` for the block at the bottom of Your turn:
+
+| `target_id` | where on the page |
+|---|---|
+| `vision-design-look` | The look of the whole thing |
+| `vision-design-drop` | How a drop shows on the map |
+| `vision-design-invite` | The secret-show invite card |
+| `vision-design-first` | The first screen |
+| `questions-design-mark` | The mark on the home screen |
+| `moodboard` | Moodboard, in Your turn |
+
+Before upload the site downscales each image so its long edge is at most 2000 px and saves it as WebP (JPEG where the browser cannot write WebP); GIFs under 10 MB are kept as they are. `width` and `height` are the stored size.
+
+Every image with its public URL, by call and person:
+
+```sql
+select i.target_id as call,
+       i.reviewer_first, i.reviewer_last,
+       i.created_at, i.caption, i.width, i.height,
+       'https://odcgntoecxmihaovxazf.supabase.co/storage/v1/object/public/secret-cloud-design/' || i.storage_path as url
+from public.secret_cloud_images i
+where i.deleted_at is null and coalesce(i.site_version, '') <> 'test'
+order by array_position(array['vision-design-look','vision-design-drop','vision-design-invite',
+                              'vision-design-first','questions-design-mark','moodboard'], i.target_id),
+         i.reviewer_last, i.reviewer_first, i.created_at;
+```
+
+How many each person shared, per call:
+
+```sql
+select reviewer_first, reviewer_last, target_id, count(*) as images
+from public.secret_cloud_images
+where deleted_at is null and coalesce(site_version, '') <> 'test'
+group by 1, 2, 3
+order by 2, 1, 3;
+```
+
+Removing an image on the site only sets `deleted_at` on its row; the file stays in the bucket. Removed images, if you want to see what was taken back:
+
+```sql
+select id, reviewer_first, reviewer_last, target_id, storage_path, deleted_at
+from public.secret_cloud_images
+where deleted_at is not null
+order by deleted_at desc;
+```
+
+Test uploads made while checking the site use the name QA Tester. To purge them, delete the rows and then the files (the files go through the Storage page in the dashboard, or the storage API with the service role, since the site's key can only add files):
+
+```sql
+select storage_path from public.secret_cloud_images where reviewer_key = 'qa tester';
+delete from public.secret_cloud_images where reviewer_key = 'qa tester' or site_version = 'test';
+```
+
 ## Purging test rows
 
 ```sql
 delete from public.secret_cloud_stances where site_version = 'test';
 delete from public.secret_cloud_notes   where site_version = 'test';
 delete from public.secret_cloud_visits  where site_version = 'test';
+delete from public.secret_cloud_images  where site_version = 'test';
 ```
 
 (Only the service role can delete; the site's publishable key cannot.)

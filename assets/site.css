@@ -135,12 +135,20 @@
    -------------------------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; }
 
+/* the page colour lives on html too, so it reaches every edge of the window,
+   the overscroll bounce and the area behind the browser's own bars */
 html {
   -webkit-text-size-adjust: 100%;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 body {
   margin: 0;
+  /* its own stacking context, so a mood's fixed glow (body::before, z -1)
+     paints over this background now that html carries the colour too */
+  isolation: isolate;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
@@ -1367,6 +1375,9 @@ main { display: block; }
   content: "";
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100lvh;
   z-index: -1;
   pointer-events: none;
 }
@@ -1417,6 +1428,7 @@ main { display: block; }
 :root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-3 { fill: color-mix(in srgb, var(--riso-blue) 14%, transparent); }
 
 @media (prefers-reduced-motion: no-preference) {
+  html,
   body { transition: background-color .2s ease, color .2s ease; }
 }
 
@@ -1487,8 +1499,9 @@ main { display: block; }
 /* phones: three rows on purpose, the preview name, the Light / Dark switch,
    and Back to the original set apart on its own row under a dotted rule */
 @media (max-width: 539px) {
-  .mood-chip { flex-direction: column; align-items: stretch; gap: 0; padding: .4rem .85rem .3rem; }
+  .mood-chip { flex-direction: column; align-items: stretch; gap: 0; padding: .4rem .75rem .3rem; font-size: .68rem; }
   .mood-chip > .mood-chip-sep { display: none; }
+  .mood-chip-now { white-space: nowrap; letter-spacing: 0; }
   .mood-scheme { margin-left: -.5rem; }
   .mood-scheme-btn { min-height: 26px; }
   .mood-back { min-height: 26px; margin-top: .2rem; border-top: 1px dotted var(--ink-soft); text-align: left; }
@@ -1661,6 +1674,7 @@ main { display: block; }
   --pnav-gap: 1.25rem;
   font-family: var(--font-mono);
 }
+:root { --rail-w: 2.75rem; }
 .pnav-scrim[hidden] { display: none; }
 .pnav ol,
 .pnav ul { margin: 0; padding: 0; list-style: none; }
@@ -1803,17 +1817,31 @@ main { display: block; }
   main,
   .foot { padding-inline: 3rem; }
 
+  /* the mood chip sits just right of the strip, so the two never overlap */
+  .mood-chip {
+    left: calc(var(--rail-w) + env(safe-area-inset-left, 0px) + 12px);
+    max-width: min(40rem, calc(100vw - var(--rail-w) - 28px - 9.75rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  }
+
+  /* a slim strip fixed to the window's left edge, from under the top bar to
+     the bottom of the window, with its own paper and a hairline ink rule */
   .pnav {
     position: fixed;
     z-index: 42;
-    left: max(12px, env(safe-area-inset-left, 0px));
-    top: calc(var(--pnav-top, calc(var(--bar-h) + env(safe-area-inset-top, 0px))) + var(--pnav-gap));
-    bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
-    width: 2.25rem;
+    left: 0;
+    top: var(--pnav-top, calc(var(--bar-h) + env(safe-area-inset-top, 0px)));
+    bottom: 0;
+    width: calc(var(--rail-w) + env(safe-area-inset-left, 0px));
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: .7rem;
+    padding: var(--pnav-gap) 0 calc(1rem + env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px);
+    background: var(--paper-2);
+    border-right: 1px solid var(--line);
+  }
+  @supports (border-color: color-mix(in srgb, red 50%, transparent)) {
+    .pnav { border-right-color: color-mix(in srgb, var(--ink) 38%, var(--paper-2)); }
   }
   .pnav-toggle {
     flex: none;
@@ -1909,12 +1937,12 @@ main { display: block; }
     transform: translate(-50%, -50%);
   }
 
-  /* the card opens beside the rail; its padding bridges the hover gap */
+  /* the card opens beside the strip; its padding bridges the hover gap */
   .pnav-panel {
     position: absolute;
-    top: 0;
+    top: var(--pnav-gap);
     left: 100%;
-    max-height: 100%;
+    max-height: calc(100% - var(--pnav-gap) - 1rem - env(safe-area-inset-bottom, 0px));
     display: flex;
     padding-left: .6rem;
     opacity: 0;
@@ -2000,7 +2028,7 @@ main { display: block; }
   /* the tab hangs from the bar's bottom edge, at the right */
   .pnav-toggle {
     position: fixed;
-    z-index: 42;
+    z-index: 43;
     top: calc(var(--pnav-top, calc(var(--bar-h) + 2.25rem + env(safe-area-inset-top, 0px))) + 1px);
     right: max(12px, env(safe-area-inset-right, 0px));
     display: flex;
@@ -2058,29 +2086,40 @@ main { display: block; }
     white-space: nowrap;
   }
 
-  /* the sheet drops from under the tab and stops well above the Notes button,
-     the mood chip and the review layer's phone pill */
+  /* the sheet runs edge to edge from the bar's bottom edge, with the tab as
+     its handle at the top right, and stops well above the Notes button, the
+     mood chip and the review layer's phone pill (the scrim dims the rest) */
   .pnav-panel {
     position: fixed;
     z-index: 42;
-    top: calc(var(--pnav-top, calc(var(--bar-h) + 2.25rem + env(safe-area-inset-top, 0px))) + 3.1rem);
-    left: max(12px, env(safe-area-inset-left, 0px));
-    right: max(12px, env(safe-area-inset-right, 0px));
+    top: var(--pnav-top, calc(var(--bar-h) + 2.25rem + env(safe-area-inset-top, 0px)));
+    left: 0;
+    right: 0;
     display: flex;
-    max-height: calc(100vh - var(--pnav-top, 6rem) - 3.1rem - 8rem - env(safe-area-inset-bottom, 0px));
-    max-height: calc(100dvh - var(--pnav-top, 6rem) - 3.1rem - 8rem - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100vh - var(--pnav-top, 6rem) - 8rem - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - var(--pnav-top, 6rem) - 8rem - env(safe-area-inset-bottom, 0px));
+    padding-top: calc(2.75rem + 1px);
+    border-bottom: 1.5px solid var(--ink);
+    background: var(--paper-2);
+    box-shadow: var(--shadow);
     visibility: hidden;
     opacity: 0;
     transform: translateY(-6px);
   }
   .pnav-card {
     width: 100%;
-    max-width: 30rem;
-    margin-left: auto;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    border: 0;
+    border-top: 1px dashed var(--line);
+    border-radius: 0;
+    box-shadow: none;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
+  /* open, the tab and the sheet read as one piece of paper */
+  .pnav.is-open .pnav-toggle { box-shadow: none; }
   .pnav.is-open .pnav-panel { visibility: visible; opacity: 1; transform: none; }
   .pnav-link { min-height: 2.25rem; align-items: center; }
   .pnav-link-sub { min-height: 2.5rem; font-size: .74rem; }

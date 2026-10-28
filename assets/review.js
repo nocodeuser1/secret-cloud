@@ -19,9 +19,10 @@
   var KEY = String(CFG.supabaseKey);
   var SITE_VERSION = String(CFG.siteVersion || "dev").slice(0, 40);
   var TABLES = Object.assign(
-    { visits: "secret_cloud_visits", notes: "secret_cloud_notes", stances: "secret_cloud_stances" },
+    { visits: "secret_cloud_visits", notes: "secret_cloud_notes", stances: "secret_cloud_stances", images: "secret_cloud_images" },
     CFG.tables || {}
   );
+  var IMAGE_BUCKET = String((CFG.storage && CFG.storage.images) || "secret-cloud-design");
 
   var STORAGE_REVIEWER = "sc.reviewer";
   var STORAGE_VISIT = "sc.lastVisit";
@@ -55,6 +56,7 @@
     reviewer: null, // { first, last, clientId }
     notes: new Map(), // id -> note row
     stances: new Map(), // id -> stance row
+    images: new Map(), // id -> image row
     visits: [],
     anchors: new Map(), // note id -> { start, end } | { orphan: true }
     blocks: new Map(), // block id -> element
@@ -275,8 +277,12 @@
   }
 
   function hasDraft(pop) {
-    var ta = pop ? pop.querySelector("textarea") : null;
-    return !!(ta && ta.value.trim());
+    // Typed text in any field, or an image picked in the image composer.
+    if (!pop) return false;
+    if (pop.dataset && pop.dataset.scFile) return true;
+    var fields = pop.querySelectorAll('textarea, input[type="text"]');
+    for (var i = 0; i < fields.length; i++) if (fields[i].value.trim()) return true;
+    return false;
   }
 
   function focusables(root) {
@@ -370,6 +376,11 @@
       return rows.filter(rowBelongsHere);
     });
   }
+  function fetchImages() {
+    return fetchAll(TABLES.images, "?select=*&deleted_at=is.null&order=created_at.asc,id.asc").then(function (rows) {
+      return rows.filter(rowBelongsHere);
+    });
+  }
   function fetchVisits() {
     return api(TABLES.visits, "?select=reviewer_first,reviewer_last,reviewer_key,created_at,site_version&order=created_at.desc&limit=500").then(function (rows) {
       return Array.isArray(rows) ? rows.filter(rowBelongsHere) : [];
@@ -458,6 +469,7 @@
         state.reviewer = null;
         closeComposer();
         closeThread();
+        closeLightbox(true);
         closeDrawer();
         renderChip();
         openGate(1);
@@ -601,7 +613,7 @@
   // desktop browsers; iOS Safari ignores it, so there the body is fixed at the saved scroll position.
   var lock = { on: false, fixed: false, y: 0 };
   function updateLock() {
-    var need = !!ui.gate || !!ui.drawerOpen || (isPhone() && (!!ui.composer || !!ui.thread));
+    var need = !!ui.gate || !!ui.drawerOpen || !!ui.lightbox || (isPhone() && (!!ui.composer || !!ui.thread));
     if (need === lock.on) return;
     var root = document.documentElement;
     if (need) {
@@ -1170,7 +1182,7 @@
     return { x: window.scrollX || window.pageXOffset || 0, y: window.scrollY || window.pageYOffset || 0 };
   }
 
-  function placePopover(pop, rect) {
+  function placePopover(pop, rect, opts) {
     pop.classList.toggle("sc-pop--sheet", isPhone());
     fitSheets();
     if (isPhone() || !rect) {
@@ -1184,13 +1196,19 @@
     var x = rect.left + rect.width / 2 - pw / 2;
     x = Math.max(box.left + insets.left + 8, Math.min(x, box.left + box.width - insets.right - pw - 8));
     var minY = box.top + insets.top + 8;
+    if (opts && opts.minTop) minY = Math.max(minY, box.top + opts.minTop + 8);
     var maxY = box.top + box.height - insets.bottom - 8;
     var y;
     var below = rect.bottom + 10;
     var above = rect.top - ph - 10;
-    if (below + ph <= maxY) y = below;
-    else if (above >= minY) y = above;
-    else y = Math.max(minY, Math.min(below, maxY - ph));
+    var side = opts && opts.side;
+    if (side === "below") y = below;
+    else if (side === "above") y = above;
+    else if (below + ph <= maxY) { y = below; side = "below"; }
+    else if (above >= minY) { y = above; side = "above"; }
+    else { y = below; side = "below"; }
+    y = Math.max(minY, Math.min(y, maxY - ph));
+    if (opts) opts.side = side;
     var off = docOffset();
     pop.style.left = Math.round(x + off.x) + "px";
     pop.style.top = Math.round(y + off.y) + "px";
@@ -1314,6 +1332,8 @@
   function closeComposer() {
     if (!ui.composer) { state.composer = null; return; }
     var ret = state.composer && state.composer.returnFocus;
+    var cleanup = state.composer && state.composer.cleanup;
+    if (cleanup) { try { cleanup(); } catch (_) { /* ignore */ } }
     if (ui.composer.parentNode) ui.composer.parentNode.removeChild(ui.composer);
     ui.composer = null;
     state.composer = null;
@@ -1880,6 +1900,7 @@
     if (!ui.drawer) return;
     closeComposer();
     closeThread();
+    closeLightbox(true);
     hidePill();
     ui.drawerOpen = true;
     ui.drawerReturn = document.activeElement;
@@ -1914,6 +1935,7 @@
     var keepNote = inDrawer && active.dataset && active.dataset.note ? String(active.dataset.note) : null;
     var keepFilter = inDrawer && active.classList.contains("sc-filter") ? (active.dataset.key || "") : null;
     var keepStance = inDrawer && active.dataset && active.dataset.stance ? String(active.dataset.stance) : null;
+    var keepImage = inDrawer && active.dataset && active.dataset.image ? String(active.dataset.image) : null;
 
     // filter chips
     var chips = ui.drawerFilters;
@@ -1921,6 +1943,11 @@
     var keys = new Map();
     visibleRootNotes().forEach(function (note) {
       [note].concat(repliesOf(note.id)).forEach(function (row) {
+        if (row.reviewer_key && !keys.has(row.reviewer_key)) keys.set(row.reviewer_key, nameOfRow(row));
+      });
+    });
+    imageTargetOrder().forEach(function (t) {
+      imagesFor(t).forEach(function (row) {
         if (row.reviewer_key && !keys.has(row.reviewer_key)) keys.set(row.reviewer_key, nameOfRow(row));
       });
     });
@@ -1942,8 +1969,9 @@
     var notes = visibleRootNotes().filter(function (note) { return !state.filter || note.reviewer_key === state.filter; });
     if (!notes.length) {
       body.appendChild(h("p", { class: "sc-empty", text: n ? "No notes from this reviewer." : "No notes yet. Highlight a few words to leave the first one." }));
+      appendImagesGroup(body);
       appendVotesGroup(body);
-      restoreDrawerFocus(keepNote, keepFilter, keepStance);
+      restoreDrawerFocus(keepNote, keepFilter, keepStance, keepImage);
       return;
     }
     var groups = new Map();
@@ -1974,8 +2002,9 @@
       list.forEach(function (note) { sec.appendChild(drawerEntry(note)); });
       body.appendChild(sec);
     });
+    appendImagesGroup(body);
     appendVotesGroup(body);
-    restoreDrawerFocus(keepNote, keepFilter, keepStance);
+    restoreDrawerFocus(keepNote, keepFilter, keepStance, keepImage);
   }
 
   function appendVotesGroup(body) {
@@ -2013,8 +2042,15 @@
     body.appendChild(sec);
   }
 
-  function restoreDrawerFocus(noteId, filterKey, stanceId) {
+  function restoreDrawerFocus(noteId, filterKey, stanceId, imageId) {
     // The drawer is rebuilt on every change; put focus back on the same entry or chip when it was there.
+    if (imageId) {
+      var img = null;
+      Array.prototype.forEach.call(ui.drawerBody.querySelectorAll(".sc-entry[data-image]"), function (el) { if (!img && el.dataset.image === imageId) img = el; });
+      img = img || ui.drawer.querySelector(".sc-x");
+      if (img) { try { img.focus({ preventScroll: true }); } catch (_) { /* ignore */ } }
+      return;
+    }
     if (noteId === null && filterKey === null && (stanceId === null || stanceId === undefined)) return;
     var target = null;
     var pool = noteId !== null ? ui.drawerBody.querySelectorAll(".sc-entry[data-note]")
@@ -2097,6 +2133,806 @@
       flash(target, null);
       setTimeout(function () { openThread(note.id, target, []); }, reducedMotion() ? 0 : 400);
     }
+  }
+
+  // ------------------------------------------------------------------ images
+
+  // Reference images for the design calls and a moodboard. The file goes to a public storage bucket (new paths
+  // under uploads/ only, no overwrites, images up to 10 MB); a row in the images table says who shared it, for
+  // which call (target_id is the card's id, or "moodboard") and with what caption. Removing soft-deletes the row;
+  // the file stays in storage.
+  var IMAGE_TARGETS = ["vision-design-look", "vision-design-drop", "vision-design-invite", "vision-design-first", "questions-design-mark"];
+  var MOODBOARD = "moodboard";
+  var IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+  var IMAGE_MAX_SOURCE = 80 * 1024 * 1024; // larger files are not worth decoding on a phone
+  var IMAGE_MAX_EDGE = 2000;
+  var IMAGE_QUALITY = 0.85;
+  var UPLOAD_TIMEOUT = 90000;
+  var CAPTION_MAX = 500;
+  var PATH_RE = /^uploads\/[A-Za-z0-9._\/-]{1,200}$/;
+  var ICON_PREV = "M15.4 5.4a1 1 0 0 1 0 1.4L10.2 12l5.2 5.2a1 1 0 1 1-1.4 1.4l-5.9-5.9a1 1 0 0 1 0-1.4l5.9-5.9a1 1 0 0 1 1.4 0z";
+  var ICON_NEXT = "M8.6 18.6a1 1 0 0 1 0-1.4l5.2-5.2-5.2-5.2a1 1 0 1 1 1.4-1.4l5.9 5.9a1 1 0 0 1 0 1.4l-5.9 5.9a1 1 0 0 1-1.4 0z";
+
+  function clearEl(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+  function safePath(p) {
+    // The table enforces the pattern too; this also refuses "." and ".." segments, so a row can only ever point
+    // at a file inside the bucket's uploads/ folder.
+    p = String(p || "");
+    return PATH_RE.test(p) && p.split("/").every(function (seg) { return seg && seg !== "." && seg !== ".."; });
+  }
+  function publicImageUrl(path) {
+    return BASE + "/storage/v1/object/public/" + encodeURIComponent(IMAGE_BUCKET) + "/" + path;
+  }
+  function imageRowOk(r) {
+    return !!(r && r.id !== undefined && !r.deleted_at && r.target_id && safePath(r.storage_path));
+  }
+  function imagesFor(target) {
+    var out = [];
+    state.images.forEach(function (r) { if (imageRowOk(r) && String(r.target_id) === target) out.push(r); });
+    out.sort(sortByCreated);
+    return out;
+  }
+  function imageTargetOrder() {
+    return IMAGE_TARGETS.concat([MOODBOARD]);
+  }
+  function imageTargetTitle(target) {
+    if (target === MOODBOARD) return "Moodboard";
+    var el = document.getElementById(target);
+    var t = el ? el.querySelector(".design-title") : null;
+    return t ? collapseWs(t.textContent) : String(target);
+  }
+  function imageMine(r) {
+    if (!state.reviewer || !r) return false;
+    return !!((r.reviewer_key && r.reviewer_key === currentKey()) || (r.client_id && r.client_id === state.reviewer.clientId));
+  }
+  function imageCaption(r) { return collapseWs(r && r.caption).slice(0, CAPTION_MAX); }
+  function imageAlt(r) {
+    var c = imageCaption(r);
+    return c ? truncate(c, 200) : "Image shared by " + nameOfRow(r);
+  }
+  function fmtBytes(n) {
+    if (n < 1024 * 1024) return Math.max(1, Math.round(n / 1024)) + " KB";
+    return (n / 1048576).toFixed(1) + " MB";
+  }
+  function imagePath(ext) {
+    // uploads/YYYY-MM/<clientId>-<8 random hex>.<ext>
+    var d = new Date();
+    var month = d.getUTCFullYear() + "-" + ("0" + (d.getUTCMonth() + 1)).slice(-2);
+    var cid = state.reviewer && /^[0-9a-f]{16}$/.test(state.reviewer.clientId) ? state.reviewer.clientId : randomHex16();
+    return "uploads/" + month + "/" + cid + "-" + randomHex16().slice(0, 8) + "." + ext;
+  }
+  function userError(msg) {
+    var e = new Error(msg);
+    e.userMessage = msg;
+    return e;
+  }
+
+  // ---- preparing a file: decode, downscale to IMAGE_MAX_EDGE, re-encode (which also drops EXIF, GPS included)
+
+  function decodeImage(file) {
+    function viaElement() {
+      return new Promise(function (resolve, reject) {
+        var url = null;
+        try { url = URL.createObjectURL(file); } catch (err) { reject(err); return; }
+        var img = new Image();
+        var done = function () { try { URL.revokeObjectURL(url); } catch (_) { /* ignore */ } };
+        img.onload = function () {
+          var w = img.naturalWidth;
+          var ht = img.naturalHeight;
+          if (!w || !ht) { done(); reject(new Error("empty image")); return; }
+          resolve({ source: img, width: w, height: ht, close: done });
+        };
+        img.onerror = function () { done(); reject(new Error("decode failed")); };
+        img.src = url;
+      });
+    }
+    if (typeof window.createImageBitmap !== "function") return viaElement();
+    return Promise.resolve()
+      .then(function () { return window.createImageBitmap(file, { imageOrientation: "from-image" }); })
+      .catch(function () { return window.createImageBitmap(file); })
+      .then(function (bmp) {
+        if (!bmp || !bmp.width || !bmp.height) throw new Error("empty bitmap");
+        return { source: bmp, width: bmp.width, height: bmp.height, close: function () { try { bmp.close(); } catch (_) { /* ignore */ } } };
+      })
+      .catch(viaElement);
+  }
+
+  function canvasBlob(canvas, type, quality) {
+    return new Promise(function (resolve) {
+      try { canvas.toBlob(function (b) { resolve(b || null); }, type, quality); } catch (_) { resolve(null); }
+    });
+  }
+
+  function encodeImage(decoded) {
+    var scale = Math.min(1, IMAGE_MAX_EDGE / Math.max(decoded.width, decoded.height));
+    var w = Math.max(1, Math.round(decoded.width * scale));
+    var ht = Math.max(1, Math.round(decoded.height * scale));
+    function draw(ground) {
+      var c = document.createElement("canvas");
+      c.width = w;
+      c.height = ht;
+      var ctx = c.getContext("2d");
+      if (!ctx) throw userError("This browser could not convert the image. Try a JPEG or PNG.");
+      if (ground) { ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, ht); }
+      ctx.imageSmoothingEnabled = true;
+      try { ctx.imageSmoothingQuality = "high"; } catch (_) { /* ignore */ }
+      ctx.drawImage(decoded.source, 0, 0, w, ht);
+      return c;
+    }
+    return Promise.resolve()
+      .then(function () { return canvasBlob(draw(false), "image/webp", IMAGE_QUALITY); })
+      .then(function (blob) {
+        if (blob && blob.size && blob.type === "image/webp") return { blob: blob, type: "image/webp", ext: "webp", width: w, height: ht };
+        // No WebP encoder here (the browser hands back PNG or nothing): JPEG, on white so transparency is not black.
+        return canvasBlob(draw(true), "image/jpeg", IMAGE_QUALITY).then(function (jpg) {
+          if (!jpg || !jpg.size) throw userError("This browser could not convert the image. Try a JPEG or PNG.");
+          return { blob: jpg, type: "image/jpeg", ext: "jpg", width: w, height: ht };
+        });
+      });
+  }
+
+  function prepareImage(file) {
+    if (!file) return Promise.reject(userError("Pick an image first."));
+    var type = String(file.type || "").toLowerCase();
+    if (type && type.indexOf("image/") !== 0) return Promise.reject(userError("That file is not an image. Pick a photo, a screenshot or a GIF."));
+    if (file.size > IMAGE_MAX_SOURCE) return Promise.reject(userError("That file is too big to share (" + fmtBytes(file.size) + "). Try a smaller copy."));
+    return decodeImage(file)
+      .catch(function () {
+        throw userError(type ? "This browser can't read that image. Try a JPEG, PNG or a screenshot of it." : "That file is not an image. Pick a photo, a screenshot or a GIF.");
+      })
+      .then(function (decoded) {
+        if (type === "image/gif" && file.size <= IMAGE_MAX_BYTES) {
+          // GIFs stay as they are, so an animation keeps moving.
+          decoded.close();
+          return { blob: file, type: "image/gif", ext: "gif", width: decoded.width, height: decoded.height };
+        }
+        return encodeImage(decoded).then(
+          function (out) { decoded.close(); return out; },
+          function (err) { decoded.close(); throw err; }
+        );
+      })
+      .then(function (out) {
+        if (out.blob.size > IMAGE_MAX_BYTES) throw userError("That image is still over 10 MB after resizing (" + fmtBytes(out.blob.size) + "). Try a smaller one.");
+        return out;
+      });
+  }
+
+  // ---- transport: storage upload (the row goes through api())
+
+  function uploadImage(path, blob, type) {
+    var url = BASE + "/storage/v1/object/" + encodeURIComponent(IMAGE_BUCKET) + "/" + path;
+    var ctrl = null;
+    var timer = null;
+    try { ctrl = new AbortController(); } catch (_) { ctrl = null; }
+    // No x-upsert: the bucket refuses overwrites, and every path is new.
+    var init = { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": type }, body: blob };
+    if (ctrl) {
+      init.signal = ctrl.signal;
+      timer = setTimeout(function () { try { ctrl.abort(); } catch (_) { /* ignore */ } }, UPLOAD_TIMEOUT);
+    }
+    writesInFlight++;
+    return fetch(url, init)
+      .then(function (res) {
+        return res.text().then(function (text) {
+          var data = null;
+          if (text) { try { data = JSON.parse(text); } catch (_) { data = null; } }
+          if (!res.ok) {
+            var msg = (data && (data.message || data.error)) || ("HTTP " + res.status);
+            var err = new Error(String(msg));
+            err.status = res.status;
+            err.data = data;
+            throw err;
+          }
+          return data;
+        });
+      })
+      .catch(function (err) {
+        if (err && err.name === "AbortError") { var e = new Error("Upload timed out"); e.timeout = true; throw e; }
+        throw err;
+      })
+      .finally(function () {
+        if (timer) clearTimeout(timer);
+        writesInFlight = Math.max(0, writesInFlight - 1);
+      });
+  }
+
+  function uploadErrorMessage(err) {
+    var msg = String((err && err.message) || "");
+    var code = String((err && err.data && err.data.statusCode) || "");
+    if ((err && err.status === 413) || code === "413" || /too large|exceed|size/i.test(msg)) return "That image is too big to upload. Try a smaller one.";
+    if (/mime|type/i.test(msg)) return "That kind of file can't be shared here. Try a JPEG, PNG, WebP or GIF.";
+    if (err && err.timeout) return "The upload took too long. Check your connection and try again.";
+    return "Couldn't upload the image. Check your connection and try again.";
+  }
+
+  // ---- strips
+
+  function mountImageStrips() {
+    if (!ui.strips) ui.strips = new Map();
+    IMAGE_TARGETS.forEach(function (id) {
+      var card = document.getElementById(id);
+      if (!card || ui.strips.has(id)) return;
+      card.appendChild(buildStrip(id, false));
+    });
+    var marks = document.getElementById("marks");
+    if (marks && !ui.strips.has(MOODBOARD)) {
+      marks.appendChild(h("div", { class: "sc-moodboard sc-ui", id: "sc-moodboard" },
+        h("h3", { class: "sc-moodboard-title", text: "Moodboard" }),
+        h("p", { class: "sc-moodboard-line", text: "Kellen and Israel, drop references here: photos, screenshots, album art, anything that does not fit one design call." }),
+        buildStrip(MOODBOARD, true)
+      ));
+    }
+  }
+
+  function buildStrip(target, big) {
+    var title = imageTargetTitle(target);
+    var add = h("button", { type: "button", class: "sc-imgs-add", "aria-label": "Add an image to " + title },
+      h("span", { class: "sc-imgs-plus", "aria-hidden": "true", text: "+" }), "Add an image");
+    add.addEventListener("click", function () { openImageComposer(target, add, null); });
+    var label = h("span", { class: "sc-imgs-label", text: big ? "Shared so far" : "Images" });
+    var row = h("ul", { class: "sc-imgs-row", "aria-label": "Images shared for " + title });
+    // The moodboard's empty state is a first slot at thumbnail size; it opens the same composer and takes drops.
+    var slot = null;
+    if (big) {
+      slot = h("button", { type: "button", class: "sc-imgs-slot", "aria-label": "Add the first image to " + title },
+        h("span", { class: "sc-imgs-slot-tile", "aria-hidden": "true" }, h("span", { class: "sc-imgs-slot-ring", text: "+" })),
+        h("span", { class: "sc-imgs-slot-text", text: "Drop or pick an image" }));
+      slot.addEventListener("click", function () { openImageComposer(target, slot, null); });
+    }
+    var strip = h("div", { class: "sc-imgs sc-ui" + (big ? " sc-imgs--big sc-imgs--empty" : ""), dataset: { target: target } },
+      h("div", { class: "sc-imgs-head" }, label, add),
+      row,
+      slot
+    );
+    ui.strips.set(target, strip);
+    return strip;
+  }
+
+  function buildThumb(r, target) {
+    var id = String(r.id);
+    var name = nameOfRow(r);
+    var cap = imageCaption(r);
+    var img = h("img", { src: publicImageUrl(r.storage_path), alt: imageAlt(r), loading: "lazy", decoding: "async", width: toInt(r.width) || null, height: toInt(r.height) || null });
+    var li = h("li", { class: "sc-img", dataset: { image: id }, title: cap ? name + ": " + cap : name });
+    img.addEventListener("error", function () { li.classList.add("sc-img--broken"); }, { once: true });
+    var btn = h("button", { type: "button", class: "sc-img-btn" }, img);
+    btn.addEventListener("click", function () { openLightbox(target, id, btn); });
+    li.appendChild(btn);
+    li.appendChild(h("span", { class: "sc-img-meta" },
+      h("span", { class: "sc-img-name", text: name }),
+      cap ? h("span", { class: "sc-img-cap", text: cap }) : null
+    ));
+    return li;
+  }
+
+  function renderImages() {
+    // Patches each strip in place: thumbnails that are already there stay (no reload, no lost focus).
+    if (!ui.strips) return;
+    ui.strips.forEach(function (strip, target) {
+      var row = strip.querySelector(".sc-imgs-row");
+      if (!row) return;
+      var list = imagesFor(target);
+      var existing = new Map();
+      Array.prototype.forEach.call(row.children, function (li) { existing.set(li.dataset.image, li); });
+      var wanted = new Set(list.map(function (r) { return String(r.id); }));
+      existing.forEach(function (li, id) {
+        if (wanted.has(id)) return;
+        var hadFocus = li.contains(document.activeElement);
+        row.removeChild(li);
+        if (hadFocus) { var add = strip.querySelector(".sc-imgs-add"); if (add) { try { add.focus({ preventScroll: true }); } catch (_) { /* ignore */ } } }
+      });
+      var cursor = row.firstChild;
+      list.forEach(function (r) {
+        var li = existing.get(String(r.id)) || buildThumb(r, target);
+        if (li === cursor) cursor = cursor.nextSibling;
+        else row.insertBefore(li, cursor);
+      });
+      strip.classList.toggle("sc-imgs--empty", !list.length);
+      var label = strip.querySelector(".sc-imgs-label");
+      if (label && !strip.classList.contains("sc-imgs--big")) {
+        var t = list.length ? "Images · " + list.length : "Images";
+        if (label.textContent !== t) label.textContent = t;
+      }
+    });
+  }
+
+  function thumbFor(target, id) {
+    var strip = ui.strips && ui.strips.get(String(target));
+    if (!strip) return null;
+    var found = null;
+    Array.prototype.forEach.call(strip.querySelectorAll(".sc-img"), function (li) { if (!found && li.dataset.image === String(id)) found = li; });
+    return found;
+  }
+
+  function jumpToImage(r) {
+    closeDrawer();
+    var strip = ui.strips && ui.strips.get(String(r.target_id));
+    var li = thumbFor(r.target_id, r.id);
+    var target = li || strip;
+    if (!target) { toast("That image's call isn't on the page any more."); return; }
+    target.scrollIntoView({ block: "center", behavior: reducedMotion() ? "auto" : "smooth" });
+    flash(li ? li.querySelector(".sc-img-btn") : strip, null);
+    var btn = li ? li.querySelector(".sc-img-btn") : null;
+    setTimeout(function () { try { if (btn) btn.focus({ preventScroll: true }); } catch (_) { /* ignore */ } }, 0);
+  }
+
+  // ---- composer
+
+  function openImageComposer(target, anchorEl, file) {
+    closeThread();
+    closeComposer();
+    closeLightbox(true);
+    hidePill();
+    hideHint();
+    if (!state.reviewer) { openGate(1); return; }
+    var title = imageTargetTitle(target);
+    state.composer = { kind: "image", target: target, anchorEl: anchorEl || null, returnFocus: anchorEl || document.activeElement, cleanup: null, take: null };
+    var c = state.composer;
+
+    var pop = h("div", { class: "sc-pop sc-composer sc-img-composer sc-ui", role: "dialog", "aria-label": "Add an image to " + title });
+    var input = h("input", { type: "file", accept: "image/*", class: "sc-vh", tabindex: "-1", "aria-hidden": "true" });
+    var drop = h("div", { class: "sc-img-drop" });
+    var bar = h("div", { class: "sc-busy-bar", hidden: true, "aria-hidden": "true" });
+    var capId = "sc-img-cap-" + randomHex16().slice(0, 6);
+    var caption = h("input", { type: "text", id: capId, class: "sc-input", maxlength: String(CAPTION_MAX), autocomplete: "off", placeholder: "What should we take from it?" });
+    var err = h("div", { class: "sc-field-error", role: "alert" });
+    var save = h("button", { type: "button", class: "sc-btn sc-btn--primary", text: "Save image", disabled: true });
+    var cancel = h("button", { type: "button", class: "sc-btn sc-btn--ghost", text: "Cancel", onclick: function () { closeComposer(); } });
+    var closeX = h("button", { type: "button", class: "sc-x", "aria-label": "Cancel", onclick: function () { closeComposer(); } }, svgIcon("0 0 24 24", [ICON_CLOSE]));
+
+    pop.appendChild(closeX);
+    pop.appendChild(h("div", { class: "sc-pop-head" },
+      h("div", { class: "sc-pop-eyebrow", text: "Add an image" }),
+      h("div", { class: "sc-pop-title", text: title })
+    ));
+    pop.appendChild(input);
+    pop.appendChild(drop);
+    pop.appendChild(bar);
+    pop.appendChild(h("label", { class: "sc-img-label", for: capId }, "Caption ", h("span", { class: "sc-img-optional", text: "(optional)" })));
+    pop.appendChild(caption);
+    pop.appendChild(err);
+    pop.appendChild(h("div", { class: "sc-pop-actions" }, cancel, save));
+
+    var prepared = null; // { blob, type, ext, width, height }
+    var uploaded = null; // { prepared, path }: the file is in storage, only the row is missing
+    var previewUrl = null;
+    var token = 0;
+    var saving = false;
+
+    function revoke() {
+      if (previewUrl) { try { URL.revokeObjectURL(previewUrl); } catch (_) { /* ignore */ } }
+      previewUrl = null;
+    }
+    c.cleanup = function () { token++; revoke(); };
+
+    function pickButton(text) {
+      return h("button", { type: "button", class: "sc-btn sc-btn--small sc-img-pick", text: text, onclick: function () { if (!saving) input.click(); } });
+    }
+    function showEmpty() {
+      clearEl(drop);
+      drop.className = "sc-img-drop";
+      drop.appendChild(h("p", { class: "sc-img-drop-text", text: isPhone() ? "Pick a photo from your library, or take one." : "Drop an image here, paste one, or pick a file." }));
+      drop.appendChild(pickButton("Choose a photo"));
+    }
+    function showPreparing() {
+      clearEl(drop);
+      drop.className = "sc-img-drop sc-img-drop--busy";
+      drop.appendChild(h("p", { class: "sc-img-drop-text", role: "status", text: "Getting the image ready…" }));
+    }
+    function showReady(out) {
+      revoke();
+      try { previewUrl = URL.createObjectURL(out.blob); } catch (_) { previewUrl = null; }
+      clearEl(drop);
+      drop.className = "sc-img-drop sc-img-drop--ready";
+      if (previewUrl) {
+        var pv = h("img", { class: "sc-img-preview", src: previewUrl, alt: "Preview of the image you picked" });
+        pv.addEventListener("load", reposition, { once: true }); // the popover grows when the preview decodes
+        drop.appendChild(pv);
+      }
+      drop.appendChild(h("p", { class: "sc-img-facts", text: out.width + " × " + out.height + " · " + fmtBytes(out.blob.size) + (out.type === "image/gif" ? " · GIF kept as is" : "") }));
+      drop.appendChild(pickButton("Choose another"));
+    }
+    function take(file) {
+      if (!file || saving || ui.composer !== pop) return;
+      var mine = ++token;
+      prepared = null;
+      uploaded = null;
+      save.disabled = true;
+      err.textContent = "";
+      pop.dataset.scFile = "1";
+      showPreparing();
+      prepareImage(file).then(function (out) {
+        if (mine !== token || ui.composer !== pop) return;
+        prepared = out;
+        showReady(out);
+        save.disabled = false;
+        reposition();
+        try { save.focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+      }).catch(function (e) {
+        if (mine !== token || ui.composer !== pop) return;
+        prepared = null;
+        delete pop.dataset.scFile;
+        showEmpty();
+        err.textContent = (e && e.userMessage) || "Couldn't read that image. Try another one.";
+        reposition();
+      });
+    }
+    c.take = take;
+
+    function setBusy(on, text) {
+      saving = on;
+      pop.setAttribute("aria-busy", on ? "true" : "false");
+      bar.hidden = !on;
+      save.disabled = on || !prepared;
+      caption.disabled = on;
+      Array.prototype.forEach.call(drop.querySelectorAll("button"), function (b) { b.disabled = on; });
+      save.textContent = on ? text : "Save image";
+    }
+
+    function doSave() {
+      if (saving) return;
+      if (!prepared) { err.textContent = pop.dataset.scFile ? "Wait a moment, the image is still getting ready." : "Pick an image first."; return; }
+      var cap = collapseWs(caption.value);
+      if (cap.length > CAPTION_MAX) { err.textContent = "Keep the caption under " + CAPTION_MAX + " characters."; caption.focus(); return; }
+      err.textContent = "";
+      var item = prepared;
+      setBusy(true, "Uploading…");
+      var step;
+      if (uploaded && uploaded.prepared === item) step = Promise.resolve(uploaded.path);
+      else {
+        var path = imagePath(item.ext);
+        step = uploadImage(path, item.blob, item.type).then(function () {
+          uploaded = { prepared: item, path: path };
+          return path;
+        });
+      }
+      step
+        .then(function (path) {
+          if (ui.composer === pop) save.textContent = "Saving…";
+          var row = Object.assign({
+            target_id: target,
+            storage_path: path,
+            caption: cap || null,
+            width: item.width,
+            height: item.height,
+          }, reviewerFields());
+          return api(TABLES.images, "", { method: "POST", body: row, prefer: "return=representation" })
+            .then(function (rows) {
+              var saved = Array.isArray(rows) ? rows[0] : rows;
+              if (!saved || saved.id === undefined) throw new Error("No row returned");
+              return saved;
+            })
+            .catch(function (e) { e.afterUpload = true; throw e; });
+        })
+        .then(function (saved) {
+          state.images.set(String(saved.id), saved);
+          imageWritten(saved.id);
+          uploaded = null;
+          if (ui.composer === pop) { saving = false; delete pop.dataset.scFile; closeComposer(); }
+          renderImages();
+          renderDrawer();
+          toast("Image shared");
+          var li = thumbFor(target, saved.id);
+          if (li) {
+            var btn = li.querySelector(".sc-img-btn");
+            flash(btn, null);
+            try { li.parentNode.scrollLeft = li.parentNode.scrollWidth; } catch (_) { /* ignore */ }
+          }
+        })
+        .catch(function (e) {
+          if (ui.composer === pop) setBusy(false);
+          else saving = false;
+          if (e && e.afterUpload) {
+            toast("The image uploaded but did not save. Check your connection and press Save again.", { kind: "error", ttl: 8000 });
+            if (ui.composer === pop) err.textContent = "The image did not save yet. Press Save again.";
+          } else {
+            var msg = (e && e.userMessage) || uploadErrorMessage(e);
+            toast(msg, { kind: "error" });
+            if (ui.composer === pop) err.textContent = msg;
+          }
+        });
+    }
+    save.addEventListener("click", doSave);
+    caption.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); if (!e.repeat) doSave(); }
+    });
+    input.addEventListener("change", function () {
+      var f = input.files && input.files[0];
+      if (f) take(f);
+      try { input.value = ""; } catch (_) { /* ignore */ }
+    });
+
+    // Placed once on open, already sized for the preview (see review.css), and kept on that side after.
+    var placement = { side: null, minTop: 0 };
+    function reposition() {
+      if (ui.composer !== pop) return;
+      var bar = document.querySelector(".bar");
+      placement.minTop = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+      var live = anchorEl && document.contains(anchorEl);
+      if (live && !placement.side && !isPhone()) {
+        // First placement: when the popover fits on neither side, scroll just enough for it to fit below the trigger.
+        var ar = anchorEl.getBoundingClientRect();
+        var vb = viewportBox();
+        var need = ar.bottom + 10 + pop.offsetHeight - (vb.top + vb.height - insets.bottom - 24); // 24: clear air under it
+        var fitsAbove = ar.top - 10 - pop.offsetHeight >= vb.top + placement.minTop + 8;
+        if (need > 0 && !fitsAbove && ar.top - need >= vb.top + placement.minTop + 8) {
+          try { window.scrollBy({ top: need, behavior: "auto" }); } catch (_) { window.scrollBy(0, need); }
+        }
+      }
+      placePopover(pop, live ? anchorEl.getBoundingClientRect() : null, placement);
+    }
+
+    c.reposition = reposition;
+    showEmpty();
+    ui.composer = pop;
+    ui.layer.appendChild(pop);
+    showScrim();
+    reposition();
+    if (file) take(file);
+    setTimeout(function () {
+      var first = drop.querySelector("button") || caption;
+      try { first.focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+    }, 0);
+  }
+
+  // ---- drag and drop, paste
+
+  function transferHasFiles(dt) {
+    if (!dt) return false;
+    try { return Array.prototype.indexOf.call(dt.types || [], "Files") >= 0; } catch (_) { return false; }
+  }
+  function fileFromTransfer(dt) {
+    if (!dt) return null;
+    var files = [];
+    try { Array.prototype.forEach.call(dt.files || [], function (f) { files.push(f); }); } catch (_) { /* ignore */ }
+    if (!files.length) {
+      try {
+        Array.prototype.forEach.call(dt.items || [], function (it) {
+          if (it.kind === "file") { var f = it.getAsFile(); if (f) files.push(f); }
+        });
+      } catch (_) { /* ignore */ }
+    }
+    if (!files.length) return null;
+    for (var i = 0; i < files.length; i++) if (/^image\//i.test(files[i].type || "")) return files[i];
+    return files[0]; // not an image: prepareImage says so
+  }
+  function imageComposerOpen() {
+    return !!(ui.composer && state.composer && state.composer.kind === "image");
+  }
+  function dropZoneOf(node) {
+    var el = node && (node.nodeType === 1 ? node : node.parentElement);
+    if (!el || !el.closest) return null;
+    if (imageComposerOpen() && ui.composer.contains(el)) return ui.composer;
+    return el.closest(".sc-imgs[data-target]");
+  }
+  var dropHover = { el: null, timer: 0 };
+  function setDropHover(el) {
+    clearTimeout(dropHover.timer);
+    if (dropHover.el && dropHover.el !== el) dropHover.el.classList.remove("sc-drop-over");
+    dropHover.el = el;
+    if (el) {
+      el.classList.add("sc-drop-over");
+      dropHover.timer = setTimeout(function () { setDropHover(null); }, 400); // dragover repeats while it stays
+    }
+  }
+
+  function bindImageEvents() {
+    document.addEventListener("dragover", function (e) {
+      if (!transferHasFiles(e.dataTransfer)) return;
+      e.preventDefault(); // a file dropped anywhere on the page must never replace the page
+      var zone = ui.gate ? null : dropZoneOf(e.target);
+      try { e.dataTransfer.dropEffect = zone ? "copy" : "none"; } catch (_) { /* ignore */ }
+      setDropHover(zone);
+    });
+    document.addEventListener("drop", function (e) {
+      if (!transferHasFiles(e.dataTransfer)) return;
+      e.preventDefault();
+      var zone = ui.gate ? null : dropZoneOf(e.target);
+      setDropHover(null);
+      if (!zone) return;
+      var f = fileFromTransfer(e.dataTransfer);
+      if (!f) return;
+      if (zone === ui.composer && state.composer && state.composer.take) state.composer.take(f);
+      else openImageComposer(zone.dataset.target, zone.querySelector(".sc-imgs-add"), f);
+    });
+    document.addEventListener("paste", function (e) {
+      if (!imageComposerOpen() || !state.composer.take) return;
+      var f = fileFromTransfer(e.clipboardData);
+      if (!f) return; // plain text still pastes into the caption
+      e.preventDefault();
+      state.composer.take(f);
+    });
+  }
+
+  // ---- lightbox
+
+  function openLightbox(target, id, returnEl) {
+    closeThread();
+    closeLightbox(true);
+    hidePill();
+    ui.lb = { target: String(target), id: String(id), returnEl: returnEl || null, confirming: false, sig: "" };
+    var box = h("div", { class: "sc-lightbox sc-ui", role: "dialog", "aria-modal": "true", "aria-label": "Image", tabindex: "-1" });
+    box.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t === box || (t.classList && (t.classList.contains("sc-lightbox-stage") || t.classList.contains("sc-lightbox-panel-wrap")))) closeLightbox();
+    });
+    ui.lightbox = box;
+    ui.layer.appendChild(box);
+    updateLock();
+    renderLightbox();
+    setTimeout(function () {
+      var x = box.querySelector(".sc-lightbox-x");
+      try { (x || box).focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+    }, 0);
+  }
+
+  function renderLightbox(fromRefresh) {
+    var box = ui.lightbox;
+    var lb = ui.lb;
+    if (!box || !lb) return;
+    var list = imagesFor(lb.target);
+    var idx = -1;
+    list.forEach(function (r, i) { if (String(r.id) === lb.id) idx = i; });
+    if (idx < 0) { closeLightbox(); return; }
+    var sig = list.map(function (r) { return String(r.id); }).join(",") + "|" + lb.id + "|" + (lb.confirming ? 1 : 0) + "|" + (currentKey() || "");
+    if (fromRefresh && sig === lb.sig) { refreshTimes(box); return; }
+    lb.sig = sig;
+    var r = list[idx];
+    var active = document.activeElement;
+    var keepCtl = active && box.contains(active) && active.dataset ? active.dataset.lb || null : null;
+    clearEl(box);
+    box.setAttribute("aria-label", "Image shared by " + nameOfRow(r));
+
+    var many = list.length > 1;
+    var stage = h("div", { class: "sc-lightbox-stage" },
+      h("img", { class: "sc-lightbox-img", src: publicImageUrl(r.storage_path), alt: imageAlt(r), decoding: "async" })
+    );
+    if (many) {
+      stage.appendChild(h("button", { type: "button", class: "sc-lightbox-nav sc-lightbox-prev", "aria-label": "Previous image", dataset: { lb: "prev" }, onclick: function () { stepLightbox(-1); } }, svgIcon("0 0 24 24", [ICON_PREV])));
+      stage.appendChild(h("button", { type: "button", class: "sc-lightbox-nav sc-lightbox-next", "aria-label": "Next image", dataset: { lb: "next" }, onclick: function () { stepLightbox(1); } }, svgIcon("0 0 24 24", [ICON_NEXT])));
+    }
+    var cap = imageCaption(r);
+    var actions = null;
+    if (imageMine(r)) {
+      actions = h("div", { class: "sc-note-actions sc-lightbox-actions" });
+      if (lb.confirming) {
+        var c = h("span", { class: "sc-confirm" },
+          h("span", { text: "Remove this image? " }),
+          h("button", { type: "button", class: "sc-link sc-link--danger", text: "Remove", dataset: { lb: "confirm" }, onclick: function () { removeImage(r, c); } }),
+          h("span", { text: " / " }),
+          h("button", { type: "button", class: "sc-link", text: "Keep", dataset: { lb: "keep" }, onclick: function () {
+            lb.confirming = false;
+            renderLightbox();
+            focusLb("remove");
+          } })
+        );
+        actions.appendChild(c);
+      } else {
+        actions.appendChild(h("button", { type: "button", class: "sc-link", text: "Remove", dataset: { lb: "remove" }, onclick: function () {
+          lb.confirming = true;
+          renderLightbox();
+          focusLb("confirm");
+        } }));
+      }
+    }
+    var panel = h("div", { class: "sc-lightbox-panel" },
+      h("div", { class: "sc-pop-eyebrow", text: imageTargetTitle(lb.target) + (many ? " · " + (idx + 1) + " of " + list.length : "") }),
+      h("div", { class: "sc-note-meta" },
+        h("span", { class: "sc-name", text: nameOfRow(r) }),
+        h("time", { class: "sc-time", datetime: r.created_at || "", dataset: { scTs: r.created_at || "" }, text: relTime(r.created_at) })
+      ),
+      cap ? h("p", { class: "sc-lightbox-cap", text: cap }) : null,
+      actions
+    );
+    box.appendChild(stage);
+    box.appendChild(h("div", { class: "sc-lightbox-panel-wrap" }, panel));
+    box.style.setProperty("--sc-lb-panel", panel.offsetHeight + "px"); // the image takes what the caption leaves
+    box.appendChild(h("button", { type: "button", class: "sc-x sc-lightbox-x", "aria-label": "Close image", dataset: { lb: "close" }, onclick: function () { closeLightbox(); } }, svgIcon("0 0 24 24", [ICON_CLOSE])));
+    if (keepCtl) focusLb(keepCtl);
+  }
+
+  function focusLb(ctl) {
+    if (!ui.lightbox) return;
+    var el = ui.lightbox.querySelector('[data-lb="' + ctl + '"]') || ui.lightbox.querySelector(".sc-lightbox-x");
+    try { if (el) el.focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+  }
+
+  function stepLightbox(delta) {
+    var lb = ui.lb;
+    if (!lb) return;
+    var list = imagesFor(lb.target);
+    if (list.length < 2) return;
+    var idx = 0;
+    list.forEach(function (r, i) { if (String(r.id) === lb.id) idx = i; });
+    idx = (idx + delta + list.length) % list.length;
+    lb.id = String(list[idx].id);
+    lb.confirming = false;
+    renderLightbox();
+  }
+
+  function closeLightbox(quiet) {
+    if (!ui.lightbox) { ui.lb = null; return; }
+    var lb = ui.lb;
+    if (ui.lightbox.parentNode) ui.lightbox.parentNode.removeChild(ui.lightbox);
+    ui.lightbox = null;
+    ui.lb = null;
+    updateLock();
+    if (quiet || !lb) return;
+    var li = thumbFor(lb.target, lb.id);
+    var ret = li ? li.querySelector(".sc-img-btn") : lb.returnEl;
+    try { if (ret && document.contains(ret)) ret.focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+  }
+
+  function removeImage(r, confirmEl) {
+    var btns = confirmEl ? confirmEl.querySelectorAll("button") : [];
+    Array.prototype.forEach.call(btns, function (b) { b.disabled = true; });
+    api(TABLES.images, "?id=eq." + encodeURIComponent(String(r.id)), {
+      method: "PATCH",
+      body: { deleted_at: new Date().toISOString() },
+      prefer: "return=minimal",
+    })
+      .then(function () {
+        var id = String(r.id);
+        var target = String(r.target_id);
+        var before = imagesFor(target);
+        var at = -1;
+        before.forEach(function (x, i) { if (String(x.id) === id) at = i; });
+        state.images.delete(id);
+        imageRemoved(id);
+        if (ui.lb && ui.lb.id === id) {
+          var after = imagesFor(target);
+          if (after.length) {
+            ui.lb.id = String(after[Math.min(Math.max(at, 0), after.length - 1)].id);
+            ui.lb.confirming = false;
+            renderLightbox();
+            focusLb("close");
+          } else {
+            ui.lb.confirming = false;
+            var strip = ui.strips && ui.strips.get(target);
+            closeLightbox(true);
+            var add = strip ? strip.querySelector(".sc-imgs-add") : null;
+            try { if (add) add.focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+          }
+        }
+        renderImages();
+        renderDrawer();
+        toast("Image removed");
+      })
+      .catch(function () {
+        Array.prototype.forEach.call(btns, function (b) { b.disabled = false; });
+        toast("Couldn't remove the image. Check your connection and try again.", { kind: "error" });
+      });
+  }
+
+  // ---- drawer group
+
+  function appendImagesGroup(body) {
+    var order = imageTargetOrder();
+    var list = [];
+    order.forEach(function (t) {
+      imagesFor(t).forEach(function (r) { if (!state.filter || r.reviewer_key === state.filter) list.push(r); });
+    });
+    if (!list.length) return;
+    var sec = h("section", { class: "sc-drawer-group sc-drawer-group--images" });
+    sec.appendChild(h("h3", { class: "sc-drawer-group-title", text: "Images" }));
+    list.forEach(function (r) {
+      var cap = imageCaption(r);
+      var entry = h("button", { type: "button", class: "sc-entry sc-entry--image", dataset: { image: String(r.id) } },
+        h("img", { class: "sc-entry-thumb", src: publicImageUrl(r.storage_path), alt: "", loading: "lazy", decoding: "async" }),
+        h("span", { class: "sc-entry-text" },
+          h("span", { class: "sc-entry-meta" },
+            h("span", { class: "sc-name", text: nameOfRow(r) }),
+            h("span", { class: "sc-time", dataset: { scTs: r.created_at || "" }, text: relTime(r.created_at) })
+          ),
+          h("span", { class: "sc-entry-where", text: imageTargetTitle(String(r.target_id)) }),
+          cap ? h("span", { class: "sc-entry-body sc-entry-body--cap", text: cap }) : null
+        )
+      );
+      entry.addEventListener("click", function () { jumpToImage(r); });
+      sec.appendChild(entry);
+    });
+    body.appendChild(sec);
   }
 
   // ------------------------------------------------------------------ layer skeleton
@@ -2222,10 +3058,32 @@
       else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
     });
 
+    // lightbox: focus trap and arrow keys between the images of one strip
+    document.addEventListener("keydown", function (e) {
+      if (!ui.lightbox || ui.gate) return;
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        if (e.altKey || e.metaKey || e.ctrlKey) return;
+        e.preventDefault();
+        stepLightbox(e.key === "ArrowLeft" ? -1 : 1);
+        if (ui.lightbox && !ui.lightbox.contains(document.activeElement)) focusLb("close");
+        return;
+      }
+      if (e.key !== "Tab") return;
+      var list = focusables(ui.lightbox);
+      if (!list.length) { e.preventDefault(); return; }
+      var first = list[0];
+      var last = list[list.length - 1];
+      var active = document.activeElement;
+      if (!ui.lightbox.contains(active) || active === ui.lightbox) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
+      if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+    });
+
     // escape
     document.addEventListener("keydown", function (e) {
       if (e.key !== "Escape") return;
       if (ui.gate) return;
+      if (ui.lightbox) { e.preventDefault(); closeLightbox(); return; }
       if (ui.composer) { e.preventDefault(); closeComposer(); return; }
       if (ui.thread) { e.preventDefault(); closeThread(); return; }
       if (ui.drawerOpen) { e.preventDefault(); closeDrawer(); return; }
@@ -2235,6 +3093,7 @@
     // click outside popovers (a popover with typed text stays; see keepDraft)
     document.addEventListener("pointerdown", function (e) {
       var t = e.target;
+      if (ui.lightbox && ui.lightbox.contains(t)) return; // the lightbox sits above everything and handles its own clicks
       if (ui.composer && !ui.composer.contains(t) && !(ui.pill && ui.pill.contains(t))) {
         if (hasDraft(ui.composer)) keepDraft(ui.composer); else closeComposer();
       }
@@ -2250,8 +3109,13 @@
       readInsets();
       showScrim();
       if (ui.pill && !ui.pill.hidden) { ui.pill.classList.toggle("sc-pill--bar", isPhone()); repositionPill(); }
-      if (ui.composer) placePopover(ui.composer, state.composer && state.composer.kind === "highlight" ? rectOfSelectionOrAnchor(state.composer.anchor) : (state.composer && state.composer.anchorEl ? state.composer.anchorEl.getBoundingClientRect() : null));
+      if (ui.composer && state.composer && state.composer.reposition) state.composer.reposition();
+      else if (ui.composer) placePopover(ui.composer, state.composer && state.composer.kind === "highlight" ? rectOfSelectionOrAnchor(state.composer.anchor) : (state.composer && state.composer.anchorEl ? state.composer.anchorEl.getBoundingClientRect() : null));
       if (ui.thread) placePopover(ui.thread, ui.threadAnchor ? ui.threadAnchor.getBoundingClientRect() : null);
+      if (ui.lightbox) {
+        var lbPanel = ui.lightbox.querySelector(".sc-lightbox-panel");
+        if (lbPanel) ui.lightbox.style.setProperty("--sc-lb-panel", lbPanel.offsetHeight + "px");
+      }
       fitSheets();
     });
     window.addEventListener("scroll", function () { if (ui.pill && !ui.pill.hidden) repositionPill(); }, { passive: true });
@@ -2386,9 +3250,10 @@
       if (f.tagName === "INPUT" && ["text", "search", "email", "url", "tel", ""].indexOf(type) < 0) continue;
       if (String(f.value || "").trim()) return "draft";
     }
-    if (ui.composer) return "draft";
+    if (ui.composer) return "draft"; // a note composer, or the image composer with or without a picked file
     if (ui.pill && !ui.pill.hidden && state.pendingAnchor) return "draft";
     if (ui.thread && state.confirmingId !== null) return "draft";
+    if (ui.lb && ui.lb.confirming) return "draft";
     if (writesInFlight > 0) return "busy";
     if (ui.gate && !ui.gate.querySelector("input")) return "busy";
     return null;
@@ -2407,7 +3272,7 @@
     if (blocker) {
       if (blocker === "draft" && !update.notified) {
         update.notified = true;
-        toast("A newer version of the plan is out. It loads when you finish this note.", { ttl: 9000 });
+        toast(imageComposerOpen() ? "A newer version of the plan is out. It loads when you finish adding this image." : "A newer version of the plan is out. It loads when you finish this note.", { ttl: 9000 });
       }
       if (!update.watch) update.watch = setInterval(applyUpdate, UPDATE_WATCH_MS);
       return false;
@@ -2460,6 +3325,8 @@
   function noteWritten(id) { localWrites.set("n:" + String(id), Date.now()); }
   function stanceWritten(id) { localWrites.set("s:" + String(id), Date.now()); }
   function noteRemoved(id) { localDeletes.set("n:" + String(id), Date.now()); }
+  function imageWritten(id) { localWrites.set("i:" + String(id), Date.now()); }
+  function imageRemoved(id) { localDeletes.set("i:" + String(id), Date.now()); }
   function pruneLocal(now) {
     [localWrites, localDeletes].forEach(function (m) {
       m.forEach(function (t, k) { if (now - t > LOCAL_TTL) m.delete(k); });
@@ -2482,6 +3349,22 @@
     });
     state.notes = next;
   }
+  function mergeImages(rows, issued) {
+    var next = new Map();
+    rows.forEach(function (r) {
+      if (!r || r.id === undefined || r.deleted_at) return;
+      var id = String(r.id);
+      var removed = localDeletes.get("i:" + id);
+      if (removed !== undefined && removed >= issued) return; // removed here after this GET went out
+      next.set(id, r);
+    });
+    state.images.forEach(function (r, id) {
+      if (next.has(id)) return;
+      var written = localWrites.get("i:" + id);
+      if (written !== undefined && written >= issued) next.set(id, r); // shared here after this GET went out
+    });
+    state.images = next;
+  }
   function mergeStances(rows, issued) {
     var next = new Map();
     rows.forEach(function (r) { if (r && r.id !== undefined) next.set(String(r.id), r); });
@@ -2500,9 +3383,12 @@
     state.notes.forEach(function (n, id) { notes.push(id + ":" + (n.deleted_at || "")); });
     var stances = [];
     state.stances.forEach(function (_s, id) { stances.push(id); });
+    var images = [];
+    state.images.forEach(function (_r, id) { images.push(id); });
     notes.sort();
     stances.sort();
-    return notes.join(",") + "|" + stances.join(",");
+    images.sort();
+    return notes.join(",") + "|" + stances.join(",") + "|" + images.join(",");
   }
 
   var refreshing = false;
@@ -2511,11 +3397,12 @@
     if (refreshing) return Promise.resolve();
     refreshing = true;
     var issued = Date.now();
-    return Promise.allSettled([fetchNotes(), fetchStances()]).then(function (results) {
+    return Promise.allSettled([fetchNotes(), fetchStances(), fetchImages()]).then(function (results) {
       refreshing = false;
       var merged = false;
       if (results[0].status === "fulfilled") { mergeNotes(results[0].value, issued); merged = true; }
       if (results[1].status === "fulfilled") { mergeStances(results[1].value, issued); merged = true; }
+      if (results[2].status === "fulfilled") { mergeImages(results[2].value, issued); merged = true; }
       pruneLocal(Date.now());
       if (merged) {
         if (dataSignature() !== renderedSig) renderAll(true);
@@ -2535,8 +3422,10 @@
     renderMarks(!!gentle);
     renderStances();
     renderGeneral();
+    renderImages();
     renderDrawer();
     renderSectionCounts();
+    if (ui.lightbox) renderLightbox(true);
     if (ui.thread) {
       if (state.notes.has(String(state.openNote))) { setHot(state.openNote, true); renderThread(); }
       else closeThread();
@@ -2549,7 +3438,9 @@
     indexPage();
     renderSectionLinks();
     renderTutorialMount();
+    mountImageStrips();
     bindEvents();
+    bindImageEvents();
 
     state.reviewer = loadReviewer();
     renderChip();
@@ -2558,17 +3449,19 @@
     checkForUpdate();
 
     var issued = Date.now();
-    Promise.allSettled([fetchNotes(), fetchStances(), fetchVisits()]).then(function (results) {
+    Promise.allSettled([fetchNotes(), fetchStances(), fetchVisits(), fetchImages()]).then(function (results) {
       if (results[0].status === "fulfilled") mergeNotes(results[0].value, issued);
       if (results[1].status === "fulfilled") mergeStances(results[1].value, issued);
       if (results[2].status === "fulfilled") state.visits = results[2].value.concat(state.visits);
+      if (results[3].status === "fulfilled") mergeImages(results[3].value, issued);
       state.loaded = true;
       renderAll();
       renderReviewers();
       finishArrival();
-      var failed = results.filter(function (r) { return r.status === "rejected"; }).length;
+      var failed = results.slice(0, 3).filter(function (r) { return r.status === "rejected"; }).length;
       if (failed === 3) toast("Couldn't load notes. Reload to try again.", { kind: "error" });
       else if (failed) toast("Some notes may be missing. Reload to try again.", { kind: "error" });
+      else if (results[3].status === "rejected") toast("Couldn't load the shared images. Reload to try again.", { kind: "error" });
     });
   }
 

@@ -28,6 +28,8 @@
   --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* page-only derived values (not part of the token table) */
+  /* cut-paper type: condensed or wide scraps in the design-call titles */
+  --font-cut: 'Archivo', 'Arial Narrow', 'Helvetica Neue', sans-serif;
   --measure: 68ch;
   --spread: 60rem;
   --accent: var(--riso-blue);
@@ -43,7 +45,7 @@
   --tint-black: #14131C;
   --tint-white: #FBFAF6;
 
-  /* Mood palettes: four looks, each with a light and a dark set. The page
+  /* Mood palettes: six looks, each with a light and a dark set. The page
      maps them onto the tokens above under html[data-mood] (section 16), and
      the phone mockups paint their screens from them (section 17). Every
      set keeps ink, soft ink and accent at 4.5:1 or better on bg and surface
@@ -75,6 +77,20 @@
   /* kingdom glass, dark */
   --pal-glass-d-bg: #0E1636; --pal-glass-d-surface: #16204A; --pal-glass-d-ink: #F3EBD8; --pal-glass-d-soft: #BAB6D2; --pal-glass-d-line: #2C3870;
   --pal-glass-d-accent: #E9C46A; --pal-glass-d-accent2: #F0607A; --pal-glass-d-hi: #F6D88A; --pal-glass-d-moss: #5ED1A8;
+
+  /* copy shop, light: black toner on cheap paper, a highlighter, red marker */
+  --pal-copy-l-bg: #ECEBE4; --pal-copy-l-surface: #DFDDD3; --pal-copy-l-ink: #111110; --pal-copy-l-soft: #4A4945; --pal-copy-l-line: #BCBAB1;
+  --pal-copy-l-accent: #B8261A; --pal-copy-l-accent2: #F0321F; --pal-copy-l-hi: #E3F23A; --pal-copy-l-moss: #3C6B2C;
+  /* copy shop, dark: the negative, white toner on black stock */
+  --pal-copy-d-bg: #0E0E0D; --pal-copy-d-surface: #1B1B19; --pal-copy-d-ink: #F1F0EA; --pal-copy-d-soft: #ABAAA2; --pal-copy-d-line: #383733;
+  --pal-copy-d-accent: #E3F23A; --pal-copy-d-accent2: #FF5A47; --pal-copy-d-hi: #F4FF7A; --pal-copy-d-moss: #9BC46A;
+
+  /* cut and paste, light: kraft and newsprint, violet, tomato, acid green */
+  --pal-paste-l-bg: #EAE2D1; --pal-paste-l-surface: #DDD2BB; --pal-paste-l-ink: #1A1612; --pal-paste-l-soft: #544B3F; --pal-paste-l-line: #C3B69B;
+  --pal-paste-l-accent: #5B2BC0; --pal-paste-l-accent2: #F2542D; --pal-paste-l-hi: #B6EE3A; --pal-paste-l-moss: #2F7A3B;
+  /* cut and paste, dark: the same scraps on a black-plum board */
+  --pal-paste-d-bg: #17131B; --pal-paste-d-surface: #221D29; --pal-paste-d-ink: #F3EDE1; --pal-paste-d-soft: #B8AFC0; --pal-paste-d-line: #3C3445;
+  --pal-paste-d-accent: #B9A0FF; --pal-paste-d-accent2: #FF7A55; --pal-paste-d-hi: #C4F65A; --pal-paste-d-moss: #7AD083;
 
   /* the phone's camera cut-out is hardware: near-black in every theme */
   --phone-island: #0A0A0D;
@@ -1023,23 +1039,121 @@ main { display: block; }
 :root[data-theme="dark"] .size { background: var(--sunflower); color: var(--paper); }
 
 /* --------------------------------------------------------------------------
-   15. Design calls: margin sketches for the look, voted on like the rest
+   15. Design calls: each one is a pinboard. A torn sheet of backing paper
+   (::before) with tape on its corner (::after), a halftone corner in two
+   inks, a title cut word by word from different papers, a marker arrow, and
+   every option pinned on as its own paper card with its phone photo taped
+   down. Text always sits on flat paper; the texture stays in the margins.
    -------------------------------------------------------------------------- */
 .design {
-  margin: 2.4rem 0 2.6rem;
-  padding: 1.2rem 0 1.4rem;
-  border-top: 1px dashed var(--line);
-  border-bottom: 1px dashed var(--line);
+  /* torn top and bottom edges; mood and call pick a variant */
+  --tear-a: polygon(0 7px, 3% 2px, 7% 6px, 12% 1px, 18% 5px, 24% 0, 31% 6px, 38% 2px, 46% 7px, 53% 1px, 61% 5px, 68% 0, 76% 6px, 83% 2px, 90% 6px, 96% 1px, 100% 5px,
+    100% calc(100% - 6px), 97% calc(100% - 1px), 91% calc(100% - 7px), 85% calc(100% - 2px), 78% 100%, 71% calc(100% - 6px), 63% calc(100% - 1px), 55% calc(100% - 5px), 48% 100%, 40% calc(100% - 7px), 33% calc(100% - 2px), 25% calc(100% - 6px), 18% 100%, 11% calc(100% - 5px), 5% calc(100% - 1px), 0 calc(100% - 6px));
+  --tear-b: polygon(0 3px, 5% 7px, 10% 1px, 17% 6px, 23% 2px, 30% 7px, 37% 0, 44% 5px, 52% 1px, 59% 7px, 66% 2px, 73% 6px, 80% 0, 87% 5px, 93% 2px, 100% 6px,
+    100% calc(100% - 2px), 94% calc(100% - 7px), 88% calc(100% - 1px), 81% calc(100% - 6px), 74% calc(100% - 2px), 66% 100%, 59% calc(100% - 6px), 51% calc(100% - 1px), 43% calc(100% - 7px), 36% calc(100% - 2px), 28% 100%, 21% calc(100% - 5px), 14% calc(100% - 1px), 7% calc(100% - 6px), 0 calc(100% - 2px));
+  --tear: var(--tear-a);
+  --tape-alpha: 58%;
+  --tape: color-mix(in srgb, var(--sunflower) var(--tape-alpha), transparent);
+  /* a soft gloss across every strip, so tape reads as tape and not a flat block */
+  --tape-sheen: linear-gradient(176deg, color-mix(in srgb, var(--tint-white) 34%, transparent) 0 22%, transparent 48%, color-mix(in srgb, var(--tint-white) 12%, transparent) 78%, transparent);
+  --tape-cut: polygon(0 10%, 4% 0, 8% 12%, 12% 0, 88% 0, 92% 10%, 96% 0, 100% 12%, 100% 88%, 96% 100%, 92% 90%, 88% 100%, 12% 100%, 8% 88%, 4% 100%, 0 90%);
+  /* the pinned cards: page paper in light; in dark, a sheet lighter than the board */
+  --card: var(--paper);
+  --card-rim: color-mix(in srgb, var(--line) 85%, transparent);
+  --board-shadow: 0 1px 1px color-mix(in srgb, var(--tint-black) 14%, transparent),
+    0 10px 20px -12px color-mix(in srgb, var(--tint-black) 55%, transparent);
+  /* where the board's tape sits; each call moves it */
+  --bt-x: 1.1rem;
+  --bt-r: -5deg;
+  --pad-top: 1.9rem;
+  position: relative;
+  isolation: isolate;
+  margin: 3rem 0 3.25rem;
+  padding: var(--pad-top) 12px 1.75rem;
   scroll-margin-top: calc(var(--pnav-top, calc(var(--bar-h) + env(safe-area-inset-top, 0px))) + 1rem);
 }
+.design[data-call="drop"],
+.design[data-call="first"] { --tear: var(--tear-b); }
+.design[data-call="drop"] { --bt-x: 38%; --bt-r: 3deg; }
+.design[data-call="invite"] { --bt-x: 64%; --bt-r: -7deg; }
+.design[data-call="first"] { --bt-x: 2.4rem; --bt-r: 6deg; }
+.design[data-call="mark"] { --bt-x: 22%; --bt-r: -2deg; }
 @media (max-width: 899px) {
   .design { scroll-margin-top: calc(var(--pnav-top, calc(var(--bar-h) + 2.25rem + env(safe-area-inset-top, 0px))) + 3.75rem); }
 }
+@media (min-width: 700px) {
+  .design { --pad-top: 2.1rem; padding: var(--pad-top) 1.6rem 2rem; }
+}
+/* wide screens: the board bleeds a little past the reading column */
+@media (min-width: 1000px) {
+  .sec > .design { margin-inline: -1.6rem; }
+}
+/* the backing sheet, torn top and bottom */
+.design::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper-2);
+  clip-path: var(--tear);
+  pointer-events: none;
+}
+/* a strip of tape holding the sheet up */
+.design::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: var(--bt-x);
+  width: 5.25rem;
+  height: 1.25rem;
+  z-index: 1;
+  rotate: var(--bt-r);
+  background: var(--tape-sheen), var(--tape);
+  clip-path: var(--tape-cut);
+  pointer-events: none;
+}
+/* some boards take a second strip on the far corner */
+.design[data-call="look"] .design-head::before,
+.design[data-call="first"] .design-head::before,
+.design[data-call="mark"] .design-head::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--pad-top) - 7px);
+  right: -.4rem;
+  width: 4.25rem;
+  height: 1.15rem;
+  z-index: 1;
+  rotate: 38deg;
+  background: var(--tape-sheen), var(--tape);
+  clip-path: var(--tape-cut);
+  pointer-events: none;
+}
+.design[data-call="first"] .design-head::before { rotate: -34deg; }
+.design[data-call="mark"] .design-head::before { rotate: 8deg; right: 1.4rem; }
+/* two inks of halftone in the lower corner, overprinted, fading out */
+.design-dots {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  z-index: -1;
+  width: min(11rem, 45%);
+  aspect-ratio: 1;
+  background:
+    radial-gradient(circle, var(--riso-pink) 30%, transparent 33%) 0 0 / 7px 7px,
+    radial-gradient(circle, var(--riso-blue) 30%, transparent 33%) 3px 2px / 7px 7px;
+  background-blend-mode: var(--riso-blend);
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, #000, transparent 72%);
+  mask-image: radial-gradient(circle at 100% 100%, #000, transparent 72%);
+  opacity: .45;
+  pointer-events: none;
+}
+
+.design-head { position: relative; }
 .sec .design-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: .45rem;
-  margin: 0 0 .6rem;
+  margin: 0 0 .7rem;
   font-family: var(--font-mono);
   font-size: .68rem;
   font-weight: 500;
@@ -1047,90 +1161,390 @@ main { display: block; }
   line-height: 1.3;
   text-transform: uppercase;
   color: var(--ink-soft);
+  position: relative;
 }
-.design-pencil {
-  width: .95rem;
-  height: .95rem;
-  flex: none;
-  color: var(--accent);
+/* the call number, circled in marker; generated so highlights never count it */
+.sec .design-eyebrow::after {
+  content: attr(data-no);
+  margin-left: .6rem;
+  padding: 0 .3em;
+  color: inherit;
+  letter-spacing: .06em;
 }
+.sec .design-eyebrow::before {
+  content: "";
+  position: absolute;
+  right: -.55em;
+  top: 50%;
+  width: 3.4em;
+  height: 2em;
+  translate: 0 -50%;
+  background: var(--riso-pink);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30' preserveAspectRatio='none'%3E%3Cpath d='M8 18 C6 6 40 2 52 9 S50 27 26 27 S4 20 12 8' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30' preserveAspectRatio='none'%3E%3Cpath d='M8 18 C6 6 40 2 52 9 S50 27 26 27 S4 20 12 8' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.design-pencil { width: .95rem; height: .95rem; flex: none; color: var(--accent); }
+/* the title: one word per scrap, five papers */
 .sec .design-title {
-  margin: 0 0 .4rem;
+  margin: .1rem 0 .75rem;
+  max-width: 30ch;
   font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-style: italic;
-  font-weight: 400;
-  font-variation-settings: "SOFT" 80, "WONK" 1;
-  line-height: 1.2;
+  font-size: clamp(1.45rem, 1.15rem + 1.3vw, 2.05rem);
+  font-style: normal;
+  font-weight: 500;
+  font-variation-settings: "SOFT" 70, "WONK" 1;
+  line-height: 1.24;
   letter-spacing: 0;
+  text-wrap: balance;
 }
+.design-title .cut {
+  --snip: polygon(0 6%, 100% 0, 99% 94%, 1% 100%);
+  display: inline-block;
+  margin-block: .08em;
+  padding: .02em .2em .1em;
+  rotate: var(--r, 0deg);
+  clip-path: var(--snip);
+}
+/* 1 italic serif on clean paper */
+.design-title .cut-1 { --r: -1.5deg; background: var(--card); font-style: italic; font-variation-settings: "SOFT" 100, "WONK" 1; }
+/* 2 condensed black capitals, paper on ink */
+.design-title .cut-2 { --r: 1.2deg; background: var(--ink); color: var(--paper); font-family: var(--font-cut); font-stretch: 70%; font-weight: 800; font-size: .86em; text-transform: uppercase; letter-spacing: .01em; }
+/* 3 small mono on a highlighter scrap (dark type on the bright ink in every scheme) */
+.design-title .cut-3 { --r: -2deg; padding: .25em .42em; vertical-align: .18em; background: var(--sunflower); color: var(--tint-black); font-family: var(--font-mono); font-size: .62em; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; }
+/* 4 heavy roman serif, no paper, straight on the board */
+.design-title .cut-4 { --r: .8deg; padding-inline: .06em; clip-path: none; font-weight: 800; font-variation-settings: "SOFT" 0, "WONK" 0; }
+/* 5 wide grotesque, paper on the accent ink */
+.design-title .cut-5 { --r: -.8deg; background: var(--riso-blue); color: var(--paper); font-family: var(--font-cut); font-stretch: 115%; font-weight: 600; font-size: .78em; }
+@media (max-width: 479px) {
+  .sec .design-title { font-size: 1.42rem; }
+  .design-title .cut { rotate: calc(var(--r, 0deg) / 2); }
+}
+
 .sec .design-intro {
-  margin: 0 0 1.3rem;
+  margin: 0 0 1.6rem;
   font-size: 1rem;
   line-height: 1.5;
   color: var(--ink-soft);
 }
+/* the marker scribble and a price-sticker call number: only where there is
+   room beside the intro, so the right of the board head is never empty */
+.design-scribble { display: none; }
+@media (min-width: 700px) {
+  .sec .design-intro { max-width: 46ch; }
+  .sec .design-title { max-width: min(30ch, calc(100% - 7.5rem)); }
+  .design-scribble {
+    display: block;
+    position: absolute;
+    right: var(--scrib-x, .4rem);
+    bottom: -1.7rem;
+    z-index: 1;
+    width: 7.5rem;
+    height: auto;
+    rotate: var(--scrib-r, 4deg);
+    scale: var(--scrib-flip, 1) 1;
+    color: var(--riso-pink);
+    pointer-events: none;
+    view-timeline-name: --scrib;
+  }
+  .design-scribble path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .design[data-call="drop"] { --scrib-r: -3deg; --scrib-x: 1.6rem; }
+  .design[data-call="invite"] { --scrib-flip: -1; --scrib-r: -6deg; --scrib-x: 3.2rem; }
+  .design[data-call="first"] { --scrib-r: 8deg; }
+  .design[data-call="mark"] { --scrib-flip: -1; --scrib-r: 2deg; --scrib-x: 2.4rem; }
+  /* the call number on a round price sticker, generated so highlights never count it */
+  .design-head::after {
+    content: attr(data-n);
+    content: attr(data-n) / "";
+    position: absolute;
+    top: -.3rem;
+    right: var(--stk-x, .9rem);
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 5.4rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--sunflower);
+    color: var(--tint-black);
+    box-shadow: inset 0 0 0 4px var(--sunflower), inset 0 0 0 5.5px color-mix(in srgb, var(--tint-black) 70%, transparent),
+      0 3px 6px -3px color-mix(in srgb, var(--tint-black) 55%, transparent);
+    font-family: var(--font-cut);
+    font-size: 3.4rem;
+    font-stretch: 70%;
+    font-weight: 900;
+    line-height: 1;
+    rotate: var(--stk-r, -9deg);
+    pointer-events: none;
+  }
+  .design[data-call="drop"] { --stk-r: 7deg; --stk-x: 2.2rem; }
+  .design[data-call="invite"] { --stk-r: -4deg; }
+  .design[data-call="first"] { --stk-r: 12deg; --stk-x: 1.6rem; }
+  .design[data-call="mark"] { --stk-r: -14deg; }
+}
+
+/* the options: paper cards pinned to the board */
 .design-opts {
+  counter-reset: opt;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.75rem 1.5rem;
+  gap: 2rem 1.4rem;
 }
 @media (max-width: 479px) {
-  .design-opts { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+  .design-opts { grid-template-columns: minmax(0, 1fr); gap: 1.9rem; }
 }
 .design-opt {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
+  padding: 1.15rem .8rem .9rem;
+  background: var(--card);
+  border: 1px solid var(--card-rim);
+  border-radius: 2px;
+  box-shadow: var(--board-shadow);
 }
 .design-opt > * { max-width: 100%; }
 .design-opt-text { width: 100%; }
+/* tape across the top of the phone photo: each card is taped down by a
+   different hand, and some take two corner strips instead of one */
+.design-opt::before,
+.design-opt::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: var(--tape-x, 40%);
+  z-index: 2;
+  width: 4.5rem;
+  height: 1.15rem;
+  translate: -50% 0;
+  rotate: var(--tape-r, -3deg);
+  background: var(--tape-sheen), var(--tape);
+  clip-path: var(--tape-cut);
+  pointer-events: none;
+}
+.design-opt::after { display: none; }
+.design-opt:nth-child(5n+1) { --tape-x: 18%; --tape-r: -6deg; }
+.design-opt:nth-child(5n+2) { --tape-x: 62%; --tape-r: 4deg; }
+.design-opt:nth-child(5n+3) { --tape-x: 40%; --tape-r: 7deg; }
+.design-opt:nth-child(5n+4) { --tape-x: 74%; --tape-r: -2deg; }
+/* two corner strips, crossed over the card's top corners */
+.design-opt:nth-child(5n),
+.design[data-call="invite"] .design-opt:nth-child(3),
+.design[data-call="mark"] .design-opt:nth-child(1) { --tape-x: 6%; --tape-r: -38deg; }
+.design-opt:nth-child(5n)::after,
+.design[data-call="invite"] .design-opt:nth-child(3)::after,
+.design[data-call="mark"] .design-opt:nth-child(1)::after { display: block; left: 94%; rotate: 36deg; width: 3.6rem; }
+.design-opt:nth-child(5n)::before,
+.design[data-call="invite"] .design-opt:nth-child(3)::before,
+.design[data-call="mark"] .design-opt:nth-child(1)::before { width: 3.6rem; }
+/* cards lie flat so their words stay crisp; only the taped photo sits crooked.
+   On wide screens one card per board drops a little, so the grid stops looking
+   machine-set. */
+@media (min-width: 640px) {
+  .design .phone-pair { rotate: var(--tilt, 0deg); }
+  .design-opt:nth-child(4n+1) { --tilt: -1.1deg; }
+  .design-opt:nth-child(4n+2) { --tilt: .9deg; }
+  .design-opt:nth-child(4n+3) { --tilt: .6deg; }
+  .design-opt:nth-child(4n) { --tilt: -.8deg; }
+  .design[data-call="look"] .design-opt:nth-child(2),
+  .design[data-call="drop"] .design-opt:nth-child(3),
+  .design[data-call="invite"] .design-opt:nth-child(2),
+  .design[data-call="first"] .design-opt:nth-child(1),
+  .design[data-call="mark"] .design-opt:nth-child(4) { margin-top: .9rem; }
+  .design[data-call="look"] .design-opt:nth-child(5),
+  .design[data-call="first"] .design-opt:nth-child(4) { margin-top: -.5rem; }
+}
+@media (min-width: 640px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .design-opt { transition: translate .2s ease; }
+  .design-opt:hover,
+  .design-opt:focus-within { translate: 0 -3px; }
+}
+/* the phone photo: deckled along the bottom where it was torn off */
+.design .phone-pair {
+  border-radius: 0;
+  padding-bottom: .9rem;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), 92% 100%, 81% calc(100% - 3px), 70% calc(100% - 1px), 58% calc(100% - 5px), 46% calc(100% - 1px), 33% calc(100% - 4px), 21% 100%, 10% calc(100% - 3px), 0 calc(100% - 1px));
+}
+@media (max-width: 479px) {
+  .design .phone-pair { padding-inline: .5rem; }
+}
+/* option names stay upright and calm, with a lettered sticker */
 .sec .design-opt-name {
-  margin: .7rem 0 .2rem;
+  margin: .75rem 0 .2rem;
   font-family: var(--font-display);
   font-size: 1.12rem;
   font-weight: 500;
   font-variation-settings: "SOFT" 70, "WONK" 1;
   line-height: 1.25;
 }
-.sec .design-opt-text p {
-  margin: 0;
-  font-size: .98rem;
-  line-height: 1.45;
-  color: var(--ink-soft);
+.sec .design-opt-name::before {
+  counter-increment: opt;
+  content: counter(opt, upper-alpha);
+  content: counter(opt, upper-alpha) / "";
+  display: inline-grid;
+  place-items: center;
+  width: 1.55em;
+  height: 1.55em;
+  margin-right: .45em;
+  vertical-align: .12em;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: .62em;
+  font-weight: 500;
+  rotate: -6deg;
 }
+.sec .design-opt-text p { margin: 0; font-size: .98rem; line-height: 1.45; color: var(--ink-soft); }
+
+/* Try it: a hard-shadow key you press down */
 .design-try {
   display: inline-flex;
   align-items: center;
   gap: .5em;
-  min-height: 34px;
-  margin-top: .7rem;
+  min-height: 36px;
+  margin-top: .8rem;
   padding: .35em .9em;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: transparent;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: var(--card);
   color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
   font-family: var(--font-mono);
   font-size: .68rem;
   letter-spacing: .1em;
   text-transform: uppercase;
   cursor: pointer;
 }
-.design-try::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  flex: none;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-}
-.design-try:hover { border-color: var(--ink); }
-.design-try[aria-pressed="true"] { border-color: var(--riso-blue); color: var(--riso-blue); }
+.design-try::before { content: ""; width: 8px; height: 8px; flex: none; border: 1.5px solid currentColor; border-radius: 50%; }
+.design-try:hover { translate: -1px -1px; box-shadow: 4px 4px 0 var(--ink); }
+.design-try:active { translate: 2px 2px; box-shadow: 1px 1px 0 var(--ink); }
+.design-try[aria-pressed="true"] { translate: 2px 2px; background: var(--riso-blue); color: var(--paper); box-shadow: 1px 1px 0 var(--ink); }
 .design-try[aria-pressed="true"]::before { background: currentColor; }
-.design-try:focus-visible { outline-offset: 2px; border-radius: 999px; }
-.design-opt .stance { width: 100%; margin: .65rem 0 0; }
+.design-try:focus-visible { outline-offset: 3px; border-radius: 2px; }
+@media (prefers-reduced-motion: no-preference) {
+  .design-try { transition: translate .12s ease, box-shadow .12s ease; }
+}
+
+/* votes: rubber stamps. Shape only; the inked colours stay review.css's.
+   A double rule (border, a hair of paper, an inner rule), condensed capitals,
+   paper flecks where the ink did not take, and a thunk when one lands. */
+.design-opt .stance { width: 100%; margin: .75rem 0 0; }
 .design-opt .stance:empty { margin: 0; }
+.design .sc-stance-row { gap: 10px; }
+.design .sc-stance-btn {
+  position: relative;
+  rotate: var(--stamp-r, 0deg);
+  padding: .42em .85em .36em;
+  border-width: 2px;
+  border-color: currentColor;
+  border-radius: 3px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1.5px var(--card), inset 0 0 0 3px currentColor;
+  font-family: var(--font-cut);
+  font-size: .8rem;
+  font-stretch: 80%;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+/* an unpressed stamp is just the rubber: no checkbox */
+.design .sc-stance-btn[aria-pressed="false"]::before { display: none; }
+.design .sc-stance-btn::before { border-radius: 1px; }
+/* flecks of paper over the ring of ink, so the outline has small gaps */
+.design .sc-stance-btn::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  padding: 4px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 30% 40%, var(--card) .7px, transparent 1.2px) 0 0 / 9px 7px,
+    radial-gradient(circle at 70% 60%, var(--card) .6px, transparent 1.1px) 3px 2px / 13px 11px,
+    radial-gradient(circle at 50% 50%, var(--card) .8px, transparent 1.3px) 5px 1px / 17px 5px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+/* phones: three stamps on one line */
+@media (max-width: 479px) {
+  .design .sc-stance-row { gap: 8px; }
+  .design .sc-stance-btn { padding-inline: .65em; letter-spacing: .07em; }
+}
+.design .sc-stance-btn--yes { --stamp-r: -2deg; }
+.design .sc-stance-btn--maybe { --stamp-r: 1deg; }
+.design .sc-stance-btn--cut { --stamp-r: -1deg; }
+.design .sc-stance-btn[aria-pressed="true"] {
+  rotate: calc(var(--stamp-r, 0deg) * 2);
+  box-shadow: inset 0 0 0 2px var(--card);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .design .sc-stance-btn[aria-pressed="true"] { animation: thunk .2s ease-out; }
+}
+@keyframes thunk { from { scale: 1.06; } to { scale: 1; } }
+
+/* shared images: a contact sheet taped to the bottom of the board */
+.design > .sc-imgs {
+  position: relative;
+  margin-top: 1.8rem;
+  padding: .85rem .9rem .9rem;
+  border: 1px solid var(--card-rim);
+  background: var(--card);
+  box-shadow: var(--board-shadow);
+}
+.design > .sc-imgs::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  right: 1.4rem;
+  width: 4rem;
+  height: 1.1rem;
+  rotate: 4deg;
+  background: var(--tape-sheen), var(--tape);
+  clip-path: var(--tape-cut);
+  pointer-events: none;
+}
+
+/* scroll-in: cards settle onto the board, the arrow draws itself */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .design-opt { animation: pin-up linear backwards; animation-timeline: view(); animation-range: entry 5% entry 45%; }
+    .design-scribble path { stroke-dasharray: 1; animation: scribble linear both; animation-timeline: --scrib; animation-range: entry 30% cover 45%; }
+  }
+}
+@keyframes pin-up { from { opacity: .3; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
+@keyframes scribble { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* dark: the cards are paper lighter than the board, with a visible rim and a
+   deeper shadow, so they sit on top of it instead of reading as holes. Tape
+   stays lighter than the dark paper it holds down. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .design {
+    --tape-alpha: 72%;
+    --card: color-mix(in srgb, var(--paper-2) 87%, var(--ink) 13%);
+    --card-rim: color-mix(in srgb, var(--ink) 18%, transparent);
+    --board-shadow: 0 1px 0 color-mix(in srgb, var(--tint-black) 60%, transparent),
+      0 12px 22px -10px color-mix(in srgb, var(--tint-black) 90%, transparent);
+  }
+}
+:root[data-theme="dark"] .design {
+  --tape-alpha: 72%;
+  --card: color-mix(in srgb, var(--paper-2) 87%, var(--ink) 13%);
+  --card-rim: color-mix(in srgb, var(--ink) 18%, transparent);
+  --board-shadow: 0 1px 0 color-mix(in srgb, var(--tint-black) 60%, transparent),
+    0 12px 22px -10px color-mix(in srgb, var(--tint-black) 90%, transparent);
+}
+
+@media (forced-colors: active) {
+  .design::before, .design::after, .design-opt::before, .design-opt::after, .design > .sc-imgs::before,
+  .design-head::before, .design-head::after, .design .sc-stance-btn::after,
+  .design-dots, .design-scribble, .sec .design-eyebrow::before { display: none; }
+  .design-title .cut { background: none; color: CanvasText; rotate: 0deg; clip-path: none; }
+  .design-opt { border-color: CanvasText; }
+  .design .phone-pair { rotate: 0deg; }
+}
 
 /* jump links to the design calls, in Your turn */
 .list-jump {
@@ -1153,6 +1567,40 @@ main { display: block; }
   border: 1.5px dashed var(--accent);
   border-radius: 50%;
 }
+
+/* --------------------------------------------------------------------------
+   15b. The board in each mood: riso is the default above
+   -------------------------------------------------------------------------- */
+/* night walk: a lantern glow on the sheet, moss tape, fireflies for halftone */
+:root[data-mood="night-walk"] .design::before {
+  background: radial-gradient(28rem 18rem at 92% 0%, color-mix(in srgb, var(--sunflower) 12%, transparent), transparent 70%), var(--paper-2);
+}
+:root[data-mood="night-walk"] .design { --tape: color-mix(in srgb, var(--moss) var(--tape-alpha), transparent); }
+:root[data-mood="night-walk"] .design-dots {
+  background: radial-gradient(circle, var(--sunflower) 22%, transparent 26%) 0 0 / 13px 11px;
+  opacity: .55;
+}
+/* field kit: graph paper, safety-orange tape cut square, square cards */
+:root[data-mood="field-kit"] .design::before {
+  background:
+    linear-gradient(color-mix(in srgb, var(--line) 50%, transparent) 1px, transparent 1px) 0 0 / 100% 16px,
+    linear-gradient(90deg, color-mix(in srgb, var(--line) 50%, transparent) 1px, transparent 1px) 0 0 / 16px 100%,
+    var(--paper-2);
+}
+:root[data-mood="field-kit"] .design { --tape: color-mix(in srgb, var(--riso-pink) 78%, transparent); --tape-cut: none; }
+:root[data-mood="field-kit"] .design-opt { border-radius: 0; }
+:root[data-mood="field-kit"] .design-title .cut { font-variation-settings: "SOFT" 0, "WONK" 0; }
+/* the eyebrow is an ink label here: the marker loop sits on its right end */
+:root[data-mood="field-kit"] .sec .design-eyebrow::before { right: -.2em; }
+/* kingdom glass: light through coloured vellum, gold-leaf tape, arched cards */
+:root[data-mood="kingdom-glass"] .design::before {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--riso-blue) 10%, transparent), transparent 45%),
+    linear-gradient(340deg, color-mix(in srgb, var(--riso-pink) 8%, transparent), transparent 50%),
+    var(--paper-2);
+}
+:root[data-mood="kingdom-glass"] .design { --tape: color-mix(in srgb, var(--sunflower) 70%, transparent); }
+:root[data-mood="kingdom-glass"] .design-opt { border-radius: 14px 14px 2px 2px; }
 
 /* --------------------------------------------------------------------------
    16. Moods: "Try it on the page" sets html[data-mood]. Every mood has a light
@@ -1369,9 +1817,153 @@ main { display: block; }
   --tint-white: #F6F1E4;
 }
 
+:root[data-mood="copy-shop"] {
+  color-scheme: light;
+  --paper: var(--pal-copy-l-bg);
+  --paper-2: var(--pal-copy-l-surface);
+  --ink: var(--pal-copy-l-ink);
+  --ink-soft: var(--pal-copy-l-soft);
+  --line: var(--pal-copy-l-line);
+  --riso-blue: var(--pal-copy-l-accent);
+  --riso-pink: var(--pal-copy-l-accent2);
+  --sunflower: var(--pal-copy-l-hi);
+  --moss: var(--pal-copy-l-moss);
+  --mark: rgba(227,242,58,.55);
+  --mark-hot: rgba(240,50,31,.24);
+  --shadow: 0 10px 30px rgba(17,17,16,.16);
+  --riso-blend: multiply;
+  --grain-blend: multiply;
+  --grain-opacity: .08;
+  /* red marker is too faint for small type on the paper: labels use soft ink */
+  --label-pink: var(--ink-soft);
+  --label-moss: var(--moss);
+  --tint-black: #0B0B0A;
+  --tint-white: #F7F6F1;
+  /* condensed black capitals; the dark blocks pick this up from here */
+  --font-display: var(--font-cut);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="copy-shop"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: var(--pal-copy-d-bg);
+    --paper-2: var(--pal-copy-d-surface);
+    --ink: var(--pal-copy-d-ink);
+    --ink-soft: var(--pal-copy-d-soft);
+    --line: var(--pal-copy-d-line);
+    --riso-blue: var(--pal-copy-d-accent);
+    --riso-pink: var(--pal-copy-d-accent2);
+    --sunflower: var(--pal-copy-d-hi);
+    --moss: var(--pal-copy-d-moss);
+    --mark: rgba(244,255,122,.24);
+    --mark-hot: rgba(255,90,71,.32);
+    --shadow: 0 10px 30px rgba(0,0,0,.6);
+    --riso-blend: screen;
+    --grain-blend: screen;
+    --grain-opacity: .07;
+    --label-pink: var(--riso-pink);
+    --label-moss: var(--moss);
+    --tint-black: #050505;
+    --tint-white: #F1F0EA;
+  }
+}
+:root[data-mood="copy-shop"][data-theme="dark"] {
+  color-scheme: dark;
+  --paper: var(--pal-copy-d-bg);
+  --paper-2: var(--pal-copy-d-surface);
+  --ink: var(--pal-copy-d-ink);
+  --ink-soft: var(--pal-copy-d-soft);
+  --line: var(--pal-copy-d-line);
+  --riso-blue: var(--pal-copy-d-accent);
+  --riso-pink: var(--pal-copy-d-accent2);
+  --sunflower: var(--pal-copy-d-hi);
+  --moss: var(--pal-copy-d-moss);
+  --mark: rgba(244,255,122,.24);
+  --mark-hot: rgba(255,90,71,.32);
+  --shadow: 0 10px 30px rgba(0,0,0,.6);
+  --riso-blend: screen;
+  --grain-blend: screen;
+  --grain-opacity: .07;
+  --label-pink: var(--riso-pink);
+  --label-moss: var(--moss);
+  --tint-black: #050505;
+  --tint-white: #F1F0EA;
+}
+
+:root[data-mood="cut-paste"] {
+  color-scheme: light;
+  --paper: var(--pal-paste-l-bg);
+  --paper-2: var(--pal-paste-l-surface);
+  --ink: var(--pal-paste-l-ink);
+  --ink-soft: var(--pal-paste-l-soft);
+  --line: var(--pal-paste-l-line);
+  --riso-blue: var(--pal-paste-l-accent);
+  --riso-pink: var(--pal-paste-l-accent2);
+  --sunflower: var(--pal-paste-l-hi);
+  --moss: var(--pal-paste-l-moss);
+  --mark: rgba(182,238,58,.45);
+  --mark-hot: rgba(242,84,45,.28);
+  --shadow: 0 10px 30px rgba(26,22,18,.16);
+  --riso-blend: multiply;
+  --grain-blend: multiply;
+  --grain-opacity: .07;
+  /* tomato and green are too light for small type on kraft: labels use soft ink */
+  --label-pink: var(--ink-soft);
+  --label-moss: var(--ink-soft);
+  --tint-black: #120F0C;
+  --tint-white: #FBF7EE;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="cut-paste"]:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: var(--pal-paste-d-bg);
+    --paper-2: var(--pal-paste-d-surface);
+    --ink: var(--pal-paste-d-ink);
+    --ink-soft: var(--pal-paste-d-soft);
+    --line: var(--pal-paste-d-line);
+    --riso-blue: var(--pal-paste-d-accent);
+    --riso-pink: var(--pal-paste-d-accent2);
+    --sunflower: var(--pal-paste-d-hi);
+    --moss: var(--pal-paste-d-moss);
+    --mark: rgba(196,246,90,.24);
+    --mark-hot: rgba(255,122,85,.34);
+    --shadow: 0 10px 30px rgba(0,0,0,.6);
+    --riso-blend: screen;
+    --grain-blend: screen;
+    --grain-opacity: .06;
+    --label-pink: var(--riso-pink);
+    --label-moss: var(--moss);
+    --tint-black: #0A080C;
+    --tint-white: #F4EEE2;
+  }
+}
+:root[data-mood="cut-paste"][data-theme="dark"] {
+  color-scheme: dark;
+  --paper: var(--pal-paste-d-bg);
+  --paper-2: var(--pal-paste-d-surface);
+  --ink: var(--pal-paste-d-ink);
+  --ink-soft: var(--pal-paste-d-soft);
+  --line: var(--pal-paste-d-line);
+  --riso-blue: var(--pal-paste-d-accent);
+  --riso-pink: var(--pal-paste-d-accent2);
+  --sunflower: var(--pal-paste-d-hi);
+  --moss: var(--pal-paste-d-moss);
+  --mark: rgba(196,246,90,.24);
+  --mark-hot: rgba(255,122,85,.34);
+  --shadow: 0 10px 30px rgba(0,0,0,.6);
+  --riso-blend: screen;
+  --grain-blend: screen;
+  --grain-opacity: .06;
+  --label-pink: var(--riso-pink);
+  --label-moss: var(--moss);
+  --tint-black: #0A080C;
+  --tint-white: #F4EEE2;
+}
+
 /* night walk: a lantern somewhere up ahead, moss low on the ground */
 :root[data-mood="night-walk"] body::before,
-:root[data-mood="kingdom-glass"] body::before {
+:root[data-mood="kingdom-glass"] body::before,
+:root[data-mood="copy-shop"] body::before,
+:root[data-mood="cut-paste"] body::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -1426,6 +2018,103 @@ main { display: block; }
 :root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-1 { stroke: var(--riso-blue); }
 :root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-2 { stroke: var(--moss); }
 :root[data-mood="kingdom-glass"] .hero-rings .rings-ink .ring-3 { fill: color-mix(in srgb, var(--riso-blue) 14%, transparent); }
+
+/* copy shop: condensed black capitals, a highlighter swipe for misregistration,
+   red-marker stamps, a copier's dark edges */
+:root[data-mood="copy-shop"] body::before {
+  background: radial-gradient(130% 100% at 50% 40%, transparent 62%, color-mix(in srgb, var(--ink) 8%, transparent));
+}
+:root[data-mood="copy-shop"] body { font-stretch: 76%; }   /* only Archivo has a width axis */
+:root[data-mood="copy-shop"] .display { font-weight: 800; text-transform: uppercase; letter-spacing: 0; line-height: .98; }
+:root[data-mood="copy-shop"] .display em { font-family: var(--font-body); font-style: italic; font-weight: 500; text-transform: none; }
+:root[data-mood="copy-shop"] .misreg-pink { display: none; }
+:root[data-mood="copy-shop"] .misreg-ink {
+  background: linear-gradient(transparent 55%, color-mix(in srgb, var(--sunflower) 80%, transparent) 55% 90%, transparent 90%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+/* dark: light type cannot sit on the highlighter, so the swipe drops below the words */
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="copy-shop"]:not([data-theme="light"]) .misreg-ink { background: linear-gradient(transparent 91%, var(--sunflower) 91%); }
+}
+:root[data-mood="copy-shop"][data-theme="dark"] .misreg-ink { background: linear-gradient(transparent 91%, var(--sunflower) 91%); }
+:root[data-mood="copy-shop"] .stamp { border-width: 2px; border-radius: 0; transform: rotate(-4deg); }
+:root[data-mood="copy-shop"] .callout { border-radius: 0; }
+:root[data-mood="copy-shop"] .hero-rings .rings-ink { color: var(--ink); }
+/* the board: a copier's shadow down one fold and dark edges, clear packing tape */
+:root[data-mood="copy-shop"] .design::before {
+  background:
+    linear-gradient(90deg, transparent 0 78%, color-mix(in srgb, var(--ink) 6%, transparent) 79%, transparent 80.5%),
+    radial-gradient(120% 90% at 50% 50%, transparent 60%, color-mix(in srgb, var(--ink) 9%, transparent)),
+    var(--paper-2);
+}
+/* clear packing tape: a cool grey-blue film with a bright top edge on the white
+   stock; in dark, a pale film that still sits lighter than the board */
+:root[data-mood="copy-shop"] .design {
+  --tape: color-mix(in srgb, #9FB3C8 42%, transparent);
+  --tape-sheen: linear-gradient(rgba(255,255,255,.7) 0 1.5px, transparent 1.5px 40%, rgba(255,255,255,.28) 55%, transparent 80%);
+}
+:root[data-mood="copy-shop"] .design-dots { background: radial-gradient(circle, var(--ink) 34%, transparent 37%) 0 0 / 5px 5px; opacity: .3; }
+:root[data-mood="copy-shop"] .design-opt { border: 1.5px solid var(--ink); border-radius: 0; box-shadow: 4px 4px 0 color-mix(in srgb, var(--ink) 85%, transparent); }
+:root[data-mood="copy-shop"] .design-title .cut-1 { font-family: var(--font-body); }
+/* dark: a light hard shadow turns every card into a white frame, so the cards
+   take a soft rim and a black drop; the "looks" scrap is cut from white stock */
+@media (prefers-color-scheme: dark) {
+  :root[data-mood="copy-shop"]:not([data-theme="light"]) .design { --tape: color-mix(in srgb, var(--tint-white) 52%, transparent); }
+  :root[data-mood="copy-shop"]:not([data-theme="light"]) .design-opt { border-color: color-mix(in srgb, var(--ink) 30%, transparent); box-shadow: 4px 4px 0 var(--tint-black); }
+  :root[data-mood="copy-shop"]:not([data-theme="light"]) .design-title .cut-1 { background: var(--tint-white); color: var(--tint-black); }
+}
+:root[data-mood="copy-shop"][data-theme="dark"] .design { --tape: color-mix(in srgb, var(--tint-white) 52%, transparent); }
+:root[data-mood="copy-shop"][data-theme="dark"] .design-opt { border-color: color-mix(in srgb, var(--ink) 30%, transparent); box-shadow: 4px 4px 0 var(--tint-black); }
+:root[data-mood="copy-shop"][data-theme="dark"] .design-title .cut-1 { background: var(--tint-white); color: var(--tint-black); }
+:root[data-mood="copy-shop"] .design-title .cut-5 { background: var(--ink); color: var(--paper); }
+
+/* cut and paste: tomato misregistration knocked further off, round acid stickers */
+:root[data-mood="cut-paste"] body::before {
+  background:
+    radial-gradient(30rem 22rem at 100% 0%, color-mix(in srgb, var(--sunflower) 18%, transparent), transparent 70%),
+    radial-gradient(26rem 20rem at 0% 100%, color-mix(in srgb, var(--riso-blue) 10%, transparent), transparent 70%);
+}
+:root[data-mood="cut-paste"] .misreg-pink { transform: translate(4px, 3px); }
+:root[data-mood="cut-paste"] .stamp {
+  border: 2px solid var(--tint-white);
+  border-radius: 999px;
+  background: var(--sunflower);
+  color: var(--tint-black);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--tint-black) 30%, transparent);
+  transform: rotate(-6deg);
+}
+:root[data-mood="cut-paste"] .stamp-pink { background: var(--riso-pink); color: var(--tint-black); }
+:root[data-mood="cut-paste"] .callout { border-radius: 14px; box-shadow: 0 0 0 3px var(--tint-white), var(--shadow); }
+:root[data-mood="cut-paste"] .hero-rings .rings-ink .ring-1 { stroke: var(--riso-blue); }
+:root[data-mood="cut-paste"] .hero-rings .rings-ink .ring-2 { stroke: var(--riso-pink); }
+/* the board: magazine-ruled backing, washi tape, die-cut sticker cards */
+:root[data-mood="cut-paste"] .design::before {
+  background: repeating-linear-gradient(97deg, color-mix(in srgb, var(--ink) 3%, transparent) 0 1px, transparent 1px 9px), var(--paper-2);
+}
+:root[data-mood="cut-paste"] .design {
+  --tape: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--riso-pink) 65%, transparent) 0 6px, color-mix(in srgb, var(--sunflower) 65%, transparent) 6px 12px);
+}
+:root[data-mood="cut-paste"] .design-dots {
+  background:
+    radial-gradient(circle, var(--riso-pink) 30%, transparent 33%) 0 0 / 9px 9px,
+    radial-gradient(circle, var(--riso-blue) 30%, transparent 33%) 4px 3px / 9px 9px;
+}
+:root[data-mood="cut-paste"] .design-opt {
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 0 0 3px var(--tint-white), 0 6px 14px -8px color-mix(in srgb, var(--tint-black) 60%, transparent);
+}
+@media (min-width: 640px) {
+  :root[data-mood="cut-paste"] .design .phone-pair { rotate: calc(var(--tilt, 0deg) * 1.6); }
+}
+:root[data-mood="cut-paste"] .design-title .cut { rotate: calc(var(--r, 0deg) * 1.6); }
+@media (max-width: 479px) {
+  :root[data-mood="cut-paste"] .design-title .cut { rotate: calc(var(--r, 0deg) * .8); }
+}
+:root[data-mood="cut-paste"] .design .sc-stance-btn { border-radius: 999px; box-shadow: 0 0 0 2px var(--tint-white), inset 0 0 0 1.5px var(--card), inset 0 0 0 3px currentColor; }
+:root[data-mood="cut-paste"] .design .sc-stance-btn[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--tint-white), inset 0 0 0 2px var(--card); }
+:root[data-mood="cut-paste"] .design-try { border-radius: 999px; }
 
 @media (prefers-reduced-motion: no-preference) {
   html,
@@ -1615,6 +2304,26 @@ main { display: block; }
   --s-bg: var(--pal-glass-d-bg); --s-surface: var(--pal-glass-d-surface); --s-ink: var(--pal-glass-d-ink); --s-soft: var(--pal-glass-d-soft); --s-line: var(--pal-glass-d-line);
   --s-accent: var(--pal-glass-d-accent); --s-accent2: var(--pal-glass-d-accent2); --s-hi: var(--pal-glass-d-hi); --s-moss: var(--pal-glass-d-moss);
 }
+.ph-pal-copy-l,
+:root[data-mood="copy-shop"] .ph-follow.ph-light {
+  --s-bg: var(--pal-copy-l-bg); --s-surface: var(--pal-copy-l-surface); --s-ink: var(--pal-copy-l-ink); --s-soft: var(--pal-copy-l-soft); --s-line: var(--pal-copy-l-line);
+  --s-accent: var(--pal-copy-l-accent); --s-accent2: var(--pal-copy-l-accent2); --s-hi: var(--pal-copy-l-hi); --s-moss: var(--pal-copy-l-moss);
+}
+.ph-pal-copy-d,
+:root[data-mood="copy-shop"] .ph-follow.ph-dark {
+  --s-bg: var(--pal-copy-d-bg); --s-surface: var(--pal-copy-d-surface); --s-ink: var(--pal-copy-d-ink); --s-soft: var(--pal-copy-d-soft); --s-line: var(--pal-copy-d-line);
+  --s-accent: var(--pal-copy-d-accent); --s-accent2: var(--pal-copy-d-accent2); --s-hi: var(--pal-copy-d-hi); --s-moss: var(--pal-copy-d-moss);
+}
+.ph-pal-paste-l,
+:root[data-mood="cut-paste"] .ph-follow.ph-light {
+  --s-bg: var(--pal-paste-l-bg); --s-surface: var(--pal-paste-l-surface); --s-ink: var(--pal-paste-l-ink); --s-soft: var(--pal-paste-l-soft); --s-line: var(--pal-paste-l-line);
+  --s-accent: var(--pal-paste-l-accent); --s-accent2: var(--pal-paste-l-accent2); --s-hi: var(--pal-paste-l-hi); --s-moss: var(--pal-paste-l-moss);
+}
+.ph-pal-paste-d,
+:root[data-mood="cut-paste"] .ph-follow.ph-dark {
+  --s-bg: var(--pal-paste-d-bg); --s-surface: var(--pal-paste-d-surface); --s-ink: var(--pal-paste-d-ink); --s-soft: var(--pal-paste-d-soft); --s-line: var(--pal-paste-d-line);
+  --s-accent: var(--pal-paste-d-accent); --s-accent2: var(--pal-paste-d-accent2); --s-hi: var(--pal-paste-d-hi); --s-moss: var(--pal-paste-d-moss);
+}
 
 /* screen paint: sf-* fills, ss-* strokes, sg-* gradient stops */
 .ph .sf-bg { fill: var(--s-bg); }
@@ -1643,12 +2352,20 @@ main { display: block; }
 .ph .sg-hi { stop-color: var(--s-hi); }
 .ph .sg-moss { stop-color: var(--s-moss); }
 
-/* screen type: the page's three faces; sizes come from font-size attributes */
+/* screen type: the page's faces plus Archivo for cut scraps; sizes come from font-size attributes */
 .ph text { font-kerning: normal; }
-.ph .t-display { font-family: var(--font-display); font-variation-settings: "SOFT" 70, "WONK" 1; }
+/* the display face rides on the palette, so a pinned look phone never takes
+   the page's face when a mood changes it */
+.ph { --s-display: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
+/* copy shop sets its screens in condensed capitals, pinned or followed */
+.ph-pal-copy-l, .ph-pal-copy-d,
+:root[data-mood="copy-shop"] .ph-follow { --s-display: var(--font-cut); --s-stretch: 75%; }
+.ph .t-display { font-family: var(--s-display); font-stretch: var(--s-stretch, 100%); font-variation-settings: "SOFT" 70, "WONK" 1; }
 .ph .t-body { font-family: var(--font-body); }
 .ph .t-mono { font-family: var(--font-mono); }
 .ph .t-italic { font-style: italic; }
+/* a cut-paper scrap face for any screen: Archivo, condensed */
+.ph .t-cut { font-family: var(--font-cut); font-stretch: 75%; }
 /* field kit sets its type crisp, on the page and on its screens */
 .ph-pal-field-l .t-display,
 .ph-pal-field-d .t-display,
@@ -2137,4 +2854,6 @@ main { display: block; }
 
 @media print {
   .pnav { display: none; }
+  .design-dots, .design-scribble, .design::after, .design-opt::before { display: none; }
+  .design-opt { rotate: 0deg; box-shadow: none; }
 }

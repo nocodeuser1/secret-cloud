@@ -150,7 +150,7 @@
           "short": "The look",
           "eyebrow": "DESIGN CALL",
           "title": "What the whole thing looks like",
-          "html": "Kellen, the look of this is yours to steer, and these four are a starting point to push against. Each one shows the app on a phone, light and dark side by side. Tap Try it on the page to wear one across this whole plan, vote Love it, Maybe or Not this on each, and highlight any line to say what you would change.",
+          "html": "Kellen, the look of this is yours to steer, and these six are a starting point to push against. The last two are the loudest, cut from copy-shop flyers and old magazines. Each one shows the app on a phone, light and dark side by side. Tap Try it on the page to wear one across this whole plan, vote Love it, Maybe or Not this on each, and highlight any line to say what you would change.",
           "options": [
             {
               "key": "riso",
@@ -183,6 +183,22 @@
               "html": "Deep blue and gold, with warm light coming through like a stained-glass window. Only for the kingdom.",
               "stance": "design-look-kingdom-glass",
               "mood": "kingdom-glass"
+            },
+            {
+              "key": "copy-shop",
+              "id": "vision-design-look-copy-shop",
+              "name": "Copy shop",
+              "html": "A gig flyer run off at the copy shop at 2am: black toner on cheap paper, one highlighter swipe, and corrections in red marker.",
+              "stance": "design-look-copy-shop",
+              "mood": "copy-shop"
+            },
+            {
+              "key": "cut-paste",
+              "id": "vision-design-look-cut-paste",
+              "name": "Cut and paste",
+              "html": "Every word cut from a different magazine and glued down crooked, with stickers and tape over the seams and colours that should clash.",
+              "stance": "design-look-cut-paste",
+              "mood": "cut-paste"
             }
           ]
         },
@@ -1102,7 +1118,7 @@
           "items": [
             {
               "id": "marks-design-li-look",
-              "html": "<a href=\"#vision-design-look\">The look of the whole thing</a>, four moods you can try on"
+              "html": "<a href=\"#vision-design-look\">The look of the whole thing</a>, six moods you can try on"
             },
             {
               "id": "marks-design-li-drop",

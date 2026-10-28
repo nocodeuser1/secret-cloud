@@ -152,6 +152,7 @@ if (!/viewport-fit=cover/.test(html)) fail("viewport-fit=cover missing");
 if (!/<meta name="robots" content="noindex, nofollow">/.test(html)) fail("robots meta missing");
 if (!/<title>The Secret Cloud<\/title>/.test(html)) fail("title missing");
 if (!/fonts\.googleapis\.com\/css2\?[^"]*display=swap/.test(html)) fail("Google Fonts link missing display=swap");
+if (!/fonts\.googleapis\.com\/css2\?[^"]*family=Archivo:wdth,wght@62\.\.125,400\.\.900/.test(html)) fail("Google Fonts link lacks Archivo (width axis) for the cut-paper titles");
 if (!/<nav class="bar-nav" aria-label="Sections">/.test(html)) fail("nav aria-label missing");
 for (const n of plan.nav) if (!html.includes(`<a href="#${n.id}">${n.label}</a>`)) fail(`nav link for ${n.id} missing`);
 if (!/id="review-identity"/.test(html.slice(0, html.indexOf("<main")))) fail("#review-identity must be in the sticky bar before main");
@@ -171,7 +172,7 @@ let copyChecked = 0;
 for (const s of plan.sections) {
   for (const b of s.blocks) {
     const items = b.type === "ul" ? b.items.map((i) => i.html)
-      : b.type === "design" ? [b.eyebrow, b.title, b.html, ...b.options.flatMap((o) => [o.name, o.html])]
+      : b.type === "design" ? [b.eyebrow, b.html, ...b.options.flatMap((o) => [o.name, o.html])]
       : [b.html, b.text, b.fit, b.deliverable, b.risk, b.when, b.title, b.caption, b.cite].filter(Boolean);
     for (const raw of items) {
       const needle = b.type === "p" || b.type === "ul" || b.type === "quote" || b.type === "callout" || b.type === "question" || b.type === "idea" || b.type === "phase"
@@ -189,11 +190,34 @@ for (const key of ["tagline", "dek", "about"]) {
 
 // ---- design calls: card and option anchors, previews, jump links
 const moodKeys = new Set();
+const designOrder = plan.sections.flatMap((s) => s.blocks).filter((b) => b.type === "design").map((b) => b.id);
+const escHtml = (x) => String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 for (const s of plan.sections) for (const b of s.blocks) {
   if (b.type !== "design") continue;
   if (!/^[a-z]+$/.test(b.call)) fail(`design call "${b.id}" needs a lowercase "call" key`);
-  if (b.options.length < 3 || b.options.length > 4) fail(`design call "${b.id}" has ${b.options.length} options (want 3 or 4)`);
+  if (b.options.length < 3 || b.options.length > (b.call === "look" ? 6 : 4)) fail(`design call "${b.id}" has ${b.options.length} options (want 3 to 4, or up to 6 for the look)`);
   if (!new RegExp(`<aside class="design" id="${b.id}" data-block="${b.id}"`).test(html)) fail(`design call "${b.id}" card is missing its id and data-block`);
+  // design titles are cut into word scraps: compare the heading's text
+  const tm = html.match(new RegExp(`<h3 class="design-title" id="${b.id}-title">([\\s\\S]*?)</h3>`));
+  const shown = tm ? tm[1].replace(/<[^>]+>/g, "") : null;
+  if (shown !== escHtml(b.title)) fail(`design title for "${b.id}" reads "${shown}", want "${b.title}"`);
+  if (tm) {
+    const scraps = (tm[1].match(/class="cut cut-[1-5]"/g) || []).length;
+    const words = b.title.split(/ +/).length;
+    if (scraps !== words) fail(`design title for "${b.id}" has ${scraps} cut scraps for ${words} words`);
+    if (/<\/span>(?:\s{2,}|\s*\n)<span/.test(tm[1])) fail(`design title for "${b.id}" has more than one space between scraps`);
+  }
+  // the pinboard: call key on the card, one halftone corner, one marker arrow, the call number
+  if (!html.includes(`<aside class="design" id="${b.id}" data-block="${b.id}" data-call="${b.call}"`)) fail(`design call "${b.id}" needs data-call="${b.call}" right after data-block`);
+  const cardAt = html.indexOf(`<aside class="design" id="${b.id}"`);
+  const card = cardAt < 0 ? "" : html.slice(cardAt, html.indexOf("</aside>", cardAt));
+  const nDots = card.split('<span class="design-dots" aria-hidden="true"></span>').length - 1;
+  if (nDots !== 1) fail(`design call "${b.id}" has ${nDots} halftone corners (want 1)`);
+  const scrib = [...card.matchAll(/<svg class="design-scribble" viewBox=[^>]*>/g)];
+  if (scrib.length !== 1 || !/aria-hidden="true"/.test(scrib[0][0])) fail(`design call "${b.id}" needs exactly one aria-hidden marker arrow`);
+  if (!card.includes(`<p class="design-eyebrow" data-no="${designOrder.indexOf(b.id) + 1}/${designOrder.length}">`)) fail(`design call "${b.id}" eyebrow lacks data-no="${designOrder.indexOf(b.id) + 1}/${designOrder.length}"`);
+  // the price-sticker call number is generated from data-n, so it adds no highlight text
+  if (!card.includes(`<div class="design-head" data-n="${designOrder.indexOf(b.id) + 1}">`)) fail(`design call "${b.id}" head lacks data-n="${designOrder.indexOf(b.id) + 1}" for its call sticker`);
   for (const o of b.options) {
     if (o.stance !== `design-${b.call}-${o.key}`) fail(`design option "${o.id}" stance should be design-${b.call}-${o.key}, is ${o.stance}`);
     if (!html.includes(`<div class="design-opt-text" data-block="${o.id}">`)) fail(`design option "${o.id}" text block missing`);
@@ -242,7 +266,7 @@ once('<button type="button" class="mood-scheme-btn" data-scheme="dark" aria-pres
 if (!/sessionStorage\.getItem\("sc\.theme"\)/.test(html.slice(0, html.indexOf("</head>")))) fail("the head script must re-apply the remembered Light / Dark choice");
 
 // ---- phone mockups: every design option shows a light and a dark phone
-const LOOK_PAL = { riso: "riso", "night-walk": "night", "field-kit": "field", "kingdom-glass": "glass" };
+const LOOK_PAL = { riso: "riso", "night-walk": "night", "field-kit": "field", "kingdom-glass": "glass", "copy-shop": "copy", "cut-paste": "paste" };
 let phonePairs = 0;
 for (const s of plan.sections) for (const b of s.blocks) {
   if (b.type !== "design") continue;
@@ -302,8 +326,10 @@ for (const k of moodKeys) {
   if (media > -1 && css.lastIndexOf("@media (prefers-color-scheme: dark)", media) < css.lastIndexOf("}\n}", media)) fail(`mood "${k}" system-dark set is not inside @media (prefers-color-scheme: dark)`);
 }
 
-// ---- the eight palettes: tokens present, phone classes present, contrast
-const PALS = ["riso", "night", "field", "glass"];
+// ---- the twelve palettes: tokens present, phone classes present, contrast
+const PALS = ["riso", "night", "field", "glass", "copy", "paste"];
+// pinned look phones take their display face from the palette, never the page's
+if (!/\.ph \.t-display \{[^}]*font-family:\s*var\(--s-display\)/.test(css)) fail("site.css .ph .t-display must read var(--s-display) so pinned phones keep their own face");
 const PAL_KEYS = ["bg", "surface", "ink", "soft", "line", "accent", "accent2", "hi", "moss"];
 const lum = (hex) => {
   const n = parseInt(hex.slice(1), 16);

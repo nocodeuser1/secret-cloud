@@ -6,7 +6,7 @@ Every design option on the plan page shows the app on a phone, light and dark si
 |---|---|---|
 | `kit.mjs` | page (do not edit) | shared helpers: text, rings, icons, QR glyph, park map, pill |
 | `frame.mjs` | page (do not edit) | the device: bezel, side buttons, camera cut-out, status bar, home indicator, clip |
-| `screens-look.mjs` | page (do not edit) | the look call: the listening screen in the four moods |
+| `screens-look.mjs` | page (do not edit) | the look call: the listening screen in the six moods |
 | `screens-map.mjs` | artist A | `drop`: `rings`, `glow`, `hidden`, `inked`; `first`: `ring`, `map`, `words`, `dark` |
 | `screens-social.mjs` | artist B | `invite`: `stub`, `note`, `black`, `photo`; `mark`: `rings`, `rabbit`, `keyhole`, `wordmark` |
 
@@ -45,7 +45,7 @@ export const SCREENS = { drop: { rings, glow, hidden, inked }, first: { ring, ma
 
 ## Palette classes (the only colours you may use)
 
-Each phone carries `--s-*` custom properties from one of eight palettes. That is the light or dark set of whatever mood the page is wearing: riso, night walk, field kit or kingdom glass. So "Try it on the page" re-skins your screens.
+Each phone carries `--s-*` custom properties from one of twelve palettes. That is the light or dark set of whatever mood the page is wearing: riso, night walk, field kit, kingdom glass, copy shop or cut and paste. So "Try it on the page" re-skins your screens.
 
 | role | fill | stroke | gradient stop |
 |---|---|---|---|
@@ -62,7 +62,7 @@ Each phone carries `--s-*` custom properties from one of eight palettes. That is
 - Combine a fill and a stroke class on one element: `class="sf-surface ss-line" stroke-width="1"`.
 - Shape fills default to black, so always give a fill class or `fill="none"`.
 - Use `opacity` or `fill-opacity` for tints. Never write hex, `rgb()` or named colours.
-- Text needs 4.5:1 against what is under it. Ink, soft and accent all reach that on bg and on surface in all eight palettes. `accent2`, `hi` and `moss` are for shapes, not small text.
+- Text needs 4.5:1 against what is under it. Ink, soft and accent all reach that on bg and on surface in all twelve palettes. `accent2`, `hi` and `moss` are for shapes, not small text.
 - Text on an accent or ink fill uses `sf-bg`. That pairing is always readable.
 - `s-blend` on a group overprints it: multiply on light, screen on dark. Use it for the riso pink misregistration layer.
 - Each palette's hex values are in `assets/site.css` section 1 (`--pal-<look>-<l|d>-<role>`). Section 17 has the class definitions.
@@ -73,9 +73,10 @@ Use the `text()` helper in `kit.mjs`, or put these classes on `<text>`:
 
 | class | face | use |
 |---|---|---|
-| `t-display` | Fraunces (soft and wonky, crisp in field kit) | titles, the one big line |
+| `t-display` | Fraunces (soft and wonky, crisp in field kit); Archivo condensed in copy shop | titles, the one big line |
 | `t-body` | Newsreader | sentences, handwriting-ish lines in italic |
 | `t-mono` | DM Mono | labels, times, small caps, uppercase with letter-spacing |
+| `t-cut` | Archivo, condensed | scrap labels, cut-paper words |
 | `t-italic` | italic | combine with any of the above |
 
 Set the size with the `font-size` attribute in screen units, never with CSS.
@@ -123,7 +124,7 @@ node dev/build-page.mjs && node dev/render-check.mjs
   "file:///Users/soundship/Developer/secret-cloud/dev/phone-gallery.html?call=drop&size=l&mood=night-walk&theme=dark"
 ```
 
-Check every screen in all four moods and both themes. `mood=` takes `riso`, `night-walk`, `field-kit` or `kingdom-glass`. `theme=` takes `light` or `dark`; leave it off to follow the system.
+Check every screen in all six moods and both themes. `mood=` takes `riso`, `night-walk`, `field-kit`, `kingdom-glass`, `copy-shop` or `cut-paste`. `theme=` takes `light` or `dark`; leave it off to follow the system.
 
 House rules for anything a viewer can read:
 - no em-dashes or en-dashes

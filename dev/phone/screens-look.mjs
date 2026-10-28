@@ -1,12 +1,12 @@
 // dev/phone/screens-look.mjs
-// The look call: one main app screen, drawn four ways. It is the listening
+// The look call: one main app screen, drawn six ways. It is the listening
 // screen while you walk toward a drop: the app name small at the top, rings
 // with you on your way in, a warmer hint, the drop's title, a live level,
 // play and pause, and a small way to leave a reply.
 //
 // Each mood is drawn with a fixed palette (ph-pal-<palette>-l / -d), so all
-// four sit side by side whatever the page is wearing. The layout is shared, so
-// the four compare directly; each mood adds its own touches.
+// six sit side by side whatever the page is wearing. The layout is shared, so
+// the six compare directly; each mood adds its own touches.
 
 import { CX, text, rings, icon } from "./kit.mjs";
 
@@ -23,8 +23,8 @@ function appName(cls = "sf-soft") {
     text(CX + 6, 50, "THE SECRET CLOUD", { font: "mono", size: 8, cls, spacing: 1.2 });
 }
 
-function you(fill = "sf-hi", ring = "ss-ink") {
-  return `<path d="${TRAIL}" fill="none" class="ss-soft" stroke-width="1.4" stroke-dasharray="1.5 4" stroke-linecap="round" opacity=".8"/>` +
+function you(fill = "sf-hi", ring = "ss-ink", trail = TRAIL) {
+  return `<path d="${trail}" fill="none" class="ss-soft" stroke-width="1.4" stroke-dasharray="1.5 4" stroke-linecap="round" opacity=".8"/>` +
     `<circle cx="${YOU.x}" cy="${YOU.y}" r="9" class="${fill}" opacity=".3"/>` +
     `<circle cx="${YOU.x}" cy="${YOU.y}" r="4.6" class="${fill} ${ring}" stroke-width="1.6"/>` +
     text(YOU.x - 14, YOU.y + 4, "you", { font: "mono", size: 8, cls: "sf-soft", anchor: "end" });
@@ -204,11 +204,105 @@ ${player(338, { btn: "sf-accent" })}
 ${reply(366, "sf-accent2")}`;
 }
 
+// ------------------------------------------------------------- copy shop
+// A flyer photocopied onto the screen, a little crooked, taped at two corners.
+// The rings come out of the copier as dots, a red marker circles you, and
+// WARMER is a highlighter swipe, taped down crooked across the copy.
+
+function copy(ctx) {
+  const ht = ctx.id("toner");
+  const tape = (x, y, r) => `<rect x="${x}" y="${y}" width="30" height="10" transform="rotate(${r} ${x + 15} ${y + 5})" class="sf-hi" opacity=".75"/>`;
+  const loop = `M${YOU.x - 13} ${YOU.y - 2} C${YOU.x - 12} ${YOU.y - 14} ${YOU.x + 12} ${YOU.y - 14} ${YOU.x + 13} ${YOU.y} S${YOU.x - 4} ${YOU.y + 15} ${YOU.x - 11} ${YOU.y + 6}`;
+  return `
+<defs><pattern id="${ht}" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="1.6" cy="1.6" r=".95" class="sf-ink"/></pattern></defs>
+<g transform="rotate(-2.2 ${CX} 150)">
+  <rect x="18" y="62" width="144" height="178" class="sf-surface ss-ink" stroke-width="1"/>
+  <rect x="124" y="62" width="1.4" height="178" class="sf-ink" opacity=".1"/>
+</g>
+${tape(8, 58, -32)}${tape(142, 228, -28)}
+${appName("sf-soft")}
+${rings(RC.x, RC.y, [58], "ss-ink", 2.4, 'stroke-dasharray="0.1 3.2" stroke-linecap="round"')}
+${rings(RC.x, RC.y, [38], "ss-ink", 2.2)}
+<circle cx="${RC.x}" cy="${RC.y}" r="30" fill="url(#${ht})"/>
+<circle cx="${RC.x}" cy="${RC.y}" r="19" class="sf-surface ss-ink" stroke-width="1.6"/>
+<circle cx="${RC.x}" cy="${RC.y}" r="4" class="sf-ink"/>
+${you("sf-ink", "ss-surface", `M30 226 C34 216 38 208 41 200 S46 188 ${YOU.x} ${YOU.y}`)}
+<path d="${loop}" fill="none" class="ss-accent2" stroke-width="1.6" stroke-linecap="round"/>
+<g transform="rotate(-4 ${CX} 222)">
+  <rect x="${CX - 38}" y="210" width="76" height="14" class="sf-hi"/>
+  ${text(CX, 221, "WARMER", { font: "mono", size: 9.5, cls: ctx.dark ? "sf-bg" : "sf-ink", spacing: 1.8, weight: 500 })}
+  ${text(CX, 235, "18 FT", { font: "mono", size: 8.5, cls: "sf-accent", weight: 500, spacing: 1 })}
+</g>
+${tape(CX + 24, 208, 68)}
+${text(CX, 264, TITLE.toUpperCase(), { font: "display", size: 23, cls: "sf-ink", weight: 800 })}
+${text(CX, 282, SUB, { font: "body", size: 12.5, cls: "sf-soft", italic: true })}
+${level(306, { lit: "sf-ink", dim: "sf-soft", shape: "square" })}
+${player(336, { btn: "sf-ink", glyph: "sf-bg", square: true })}
+${reply(366, "sf-accent")}`;
+}
+
+// ------------------------------------------------------------- cut and paste
+// The rings torn from three papers and glued down, a LIVE sticker with a
+// die-cut edge, washi tape, and the title pasted up from two scraps.
+
+function torn(r, n, jag, seed) {
+  let d = "";
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2, rr = r + (((i * 7 + seed) % 3) - 1) * jag;
+    d += `${i ? "L" : "M"}${(RC.x + rr * Math.cos(a)).toFixed(1)} ${(RC.y + rr * Math.sin(a)).toFixed(1)} `;
+  }
+  return d + "Z";
+}
+
+function burst(cx, cy, R, r, pts = 12) {
+  let d = "";
+  for (let i = 0; i < pts * 2; i++) {
+    const a = (i / (pts * 2)) * Math.PI * 2 - Math.PI / 2, rad = i % 2 ? r : R;
+    d += `${i ? "L" : "M"}${(cx + rad * Math.cos(a)).toFixed(1)} ${(cy + rad * Math.sin(a)).toFixed(1)} `;
+  }
+  return d + "Z";
+}
+
+function paste(ctx) {
+  // title scraps: [word, font, size, paper, type, tilt]
+  const chips = [["HACK", "mono", 13, "sf-ink", "sf-bg", 2], ["berry", "display", 19, "sf-surface ss-ink", "sf-ink", -3]];
+  const widths = chips.map(([w, f, s]) => w.length * s * (f === "mono" ? 0.62 : 0.52) + 8);
+  let x = CX - (widths.reduce((a, b) => a + b, 0) + 6) / 2;
+  const title = chips.map(([w, f, s, paper, type, tilt], i) => {
+    const cx = x + widths[i] / 2, out = `<g transform="rotate(${tilt} ${cx.toFixed(1)} 256)">` +
+      `<rect x="${x.toFixed(1)}" y="244" width="${widths[i].toFixed(1)}" height="22" class="${paper}" stroke-width=".8"/>` +
+      text(cx, 261, w, { font: f, size: s, cls: type, weight: f === "mono" ? 500 : 600, italic: i === 1 }) + `</g>`;
+    x += widths[i] + 3;
+    return out;
+  }).join("") + text(x - 2, 262, ",", { font: "display", size: 19, cls: "sf-ink", anchor: "start", weight: 600 });
+  return `
+${appName("sf-soft")}
+<path d="${torn(60, 44, 1.6, 1)}" class="sf-ink" opacity=".14" transform="translate(2.5 3.5)"/>
+<path d="${torn(60, 44, 1.6, 1)}" class="sf-surface ss-line" stroke-width=".8"/>
+<path d="${torn(39, 32, 1.4, 2)}" class="sf-accent2" transform="rotate(8 ${RC.x} ${RC.y})"/>
+<path d="${torn(20, 22, 1.1, 0)}" class="sf-hi ss-ink" stroke-width="1"/>
+<circle cx="${RC.x}" cy="${RC.y}" r="3.4" class="sf-ink"/>
+<rect x="30.6" y="94.1" width="34" height="11" class="sf-accent" opacity=".55" transform="rotate(45 47.6 99.6)"/>
+<g transform="rotate(12 150 86)"><path d="${burst(150, 86, 17, 13.5)}" class="sf-accent ss-bg" stroke-width="2.2"/>
+${text(150, 89, "LIVE", { font: "mono", size: 8, cls: "sf-bg", weight: 500, spacing: 0.6 })}</g>
+${you("sf-accent2", "ss-ink")}
+<rect x="${CX - 38}" y="209" width="76" height="17" rx="8.5" class="sf-ink"/>
+<circle cx="${CX - 28}" cy="217.5" r="2.6" class="sf-accent2"/>
+${text(CX + 4, 221, "WARMER", { font: "mono", size: 9, cls: "sf-bg", spacing: 1.6, weight: 500 })}
+${title}
+${text(CX, 284, SUB, { font: "body", size: 12.5, cls: "sf-soft", italic: true })}
+${level(306, { lit: "sf-accent", shape: "square" })}
+<circle cx="${CX + 1.5}" cy="338" r="19" class="sf-ink" opacity=".15"/>
+<circle cx="${CX}" cy="336" r="19" class="sf-bg"/>
+${player(336, { btn: "sf-accent" })}
+${reply(366, "sf-accent")}`;
+}
+
 // palette key -> screen
-export const LOOK = { riso, night, field, glass };
+export const LOOK = { riso, night, field, glass, copy, paste };
 
 // The look call's option keys are the page's mood keys.
-export const MOOD_PALETTE = { riso: "riso", "night-walk": "night", "field-kit": "field", "kingdom-glass": "glass" };
+export const MOOD_PALETTE = { riso: "riso", "night-walk": "night", "field-kit": "field", "kingdom-glass": "glass", "copy-shop": "copy", "cut-paste": "paste" };
 
 export function listening(moodKey) {
   const pal = MOOD_PALETTE[moodKey];

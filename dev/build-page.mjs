@@ -81,7 +81,7 @@ const DESIGN_LABELS = "Love it|Maybe|Not this";
 // The moods a look option can try on. Each has a light and a dark set in
 // site.css and follows the system theme until the chip's Light / Dark switch
 // pins one. "riso" is the original palette worn on purpose.
-const MOODS = ["riso", "night-walk", "field-kit", "kingdom-glass"];
+const MOODS = ["riso", "night-walk", "field-kit", "kingdom-glass", "copy-shop", "cut-paste"];
 
 const SIZE_WORD = { S: "days", M: "weeks", L: "a season" };
 
@@ -199,7 +199,7 @@ const CAPTIONS = {
 
 // ---------------------------------------------------------------- design call phones
 // Every design option shows the app on a phone, light and dark side by side.
-// The look call pins each mood's own palettes so the four compare directly;
+// The look call pins each mood's own palettes so the six compare directly;
 // the other calls paint with whatever mood the page is wearing (ph-follow).
 // The drawings live in dev/phone/ (see dev/phone/CONTRACT.md).
 
@@ -225,7 +225,35 @@ ${one("dark")}
 // The little pencil beside every design call's eyebrow.
 const PENCIL = `<svg class="design-pencil" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 13.5 L3.4 10.2 L10.9 2.7 A1.3 1.3 0 0 1 12.7 2.7 L13.3 3.3 A1.3 1.3 0 0 1 13.3 5.1 L5.8 12.6 Z M9.8 3.8 L12.2 6.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
 
+// Design titles are cut from five kinds of paper, one word per scrap. The
+// words keep real single spaces between them, so the heading reads, copies
+// and anchors a highlight exactly as written in plan.json.
+const CUT_KINDS = 5;
+function cutTitle(title, seed) {
+  return title.split(/ +/).map((w, i) =>
+    `<span class="cut cut-${((i + seed) % CUT_KINDS) + 1}">${esc(w)}</span>`).join(" ");
+}
+
+// A marker scribble from the intro down into the options, a different hand on
+// each call (arrow, loop, zig-zag, underline-and-arrow), picked by call number.
+// pathLength="1" lets the CSS draw it in as the board scrolls into view.
+const SCRIBBLES = [
+  ["M6 10 C30 3 66 5 84 20 S104 48 97 61", "M84 53 L97 62 L107 49"],
+  ["M8 14 C40 4 70 8 66 26 S30 40 38 24 S78 18 92 40 S96 58 94 62", "M82 54 L94 63 L104 50"],
+  ["M6 8 L22 22 L34 8 L48 24 L60 10 L74 28 L86 16 L96 58", "M84 50 L96 60 L106 47"],
+  ["M4 12 C26 16 54 15 82 10", "M10 20 C34 23 58 22 76 18", "M70 22 C90 30 100 44 98 60", "M86 53 L98 62 L108 50"],
+];
+function scribble(n) {
+  const paths = SCRIBBLES[(n - 1) % SCRIBBLES.length].map((d) => `<path pathLength="1" d="${d}"/>`).join("");
+  return `<svg class="design-scribble" viewBox="0 0 120 70" aria-hidden="true" focusable="false">${paths}</svg>`;
+}
+
+// Call number for the eyebrow ("2/5"), shown by CSS from data-no so it adds
+// no text to the block that highlights count.
+const DESIGN_ORDER = plan.sections.flatMap((s) => s.blocks).filter((b) => b.type === "design").map((b) => b.id);
+
 function renderDesign(b) {
+  const n = DESIGN_ORDER.indexOf(b.id) + 1;
   const opts = b.options.map((o) => {
     if (o.mood && !MOODS.includes(o.mood)) throw new Error(`Unknown mood "${o.mood}" on ${o.id}`);
     const tryIt = o.mood ? `\n    <button type="button" class="design-try" data-mood="${esc(o.mood)}">Try it on the page</button>` : "";
@@ -238,10 +266,14 @@ function renderDesign(b) {
     ${stance(o.stance, `${b.short}: ${o.name}`, DESIGN_LABELS)}
   </div>`;
   });
-  return `<aside class="design" id="${b.id}" data-block="${b.id}" aria-labelledby="${b.id}-title">
-  <p class="design-eyebrow">${PENCIL}${esc(b.eyebrow)}</p>
-  <h3 class="design-title" id="${b.id}-title">${esc(b.title)}</h3>
-  <p class="design-intro">${b.html}</p>
+  return `<aside class="design" id="${b.id}" data-block="${b.id}" data-call="${b.call}" aria-labelledby="${b.id}-title">
+  <span class="design-dots" aria-hidden="true"></span>
+  <div class="design-head" data-n="${n}">
+    <p class="design-eyebrow" data-no="${n}/${DESIGN_ORDER.length}">${PENCIL}${esc(b.eyebrow)}</p>
+    <h3 class="design-title" id="${b.id}-title">${cutTitle(b.title, n)}</h3>
+    <p class="design-intro">${b.html}</p>
+    ${scribble(n)}
+  </div>
   <div class="design-opts">
 ${opts.join("\n")}
   </div>
@@ -987,7 +1019,7 @@ const html = `<!doctype html>
   <meta name="theme-color" content="#15141F" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
   <meta name="sc-build" content="${BUILD}">
   <link rel="stylesheet" href="${v("assets/site.css")}">
   <link rel="stylesheet" href="${v("assets/review.css")}">
@@ -1091,7 +1123,7 @@ const gallery = `<!doctype html>
   <title>Phone gallery</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/site.css?v=${BUILD}">
   <script>
 (function () {

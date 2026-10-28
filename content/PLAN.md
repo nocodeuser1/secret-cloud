@@ -56,12 +56,14 @@ Vote on each pillar, and leave a note where you would say it differently.
 
 **DESIGN CALL: What the whole thing looks like**
 
-Kellen, the look of this is yours to steer, and these four are a starting point to push against. Each one shows the app on a phone, light and dark side by side. Tap Try it on the page to wear one across this whole plan, vote Love it, Maybe or Not this on each, and highlight any line to say what you would change.
+Kellen, the look of this is yours to steer, and these six are a starting point to push against. The last two are the loudest, cut from copy-shop flyers and old magazines. Each one shows the app on a phone, light and dark side by side. Tap Try it on the page to wear one across this whole plan, vote Love it, Maybe or Not this on each, and highlight any line to say what you would change.
 
 - **Riso zine.** What you are reading now: paper stock, two inks that never quite line up, and rings everywhere. *(Try it on the page.)*
 - **Night walk.** The park after dark. Deep forest green, lantern amber and moss, with type you can read by the light of a phone. *(Try it on the page.)*
 - **Field kit.** Cream stock, safety orange and mono tape labels, like gear packed for a long day in the woods. *(Try it on the page.)*
 - **Kingdom glass.** Deep blue and gold, with warm light coming through like a stained-glass window. Only for the kingdom. *(Try it on the page.)*
+- **Copy shop.** A gig flyer run off at the copy shop at 2am: black toner on cheap paper, one highlighter swipe, and corrections in red marker. *(Try it on the page.)*
+- **Cut and paste.** Every word cut from a different magazine and glued down crooked, with stickers and tape over the seams and colours that should clash. *(Try it on the page.)*
 
 *Vote on each: Love it, Maybe, Not this.*
 
@@ -414,7 +416,7 @@ Every note you leave and every vote you cast on this page is stamped with your n
 
 Kellen, the look is yours. Five design calls are tucked into the plan as small phone mockups, each in light and dark. Try them, vote Love it, Maybe or Not this, and say in a note what you would change.
 
-- [The look of the whole thing](#vision-design-look), four moods you can try on
+- [The look of the whole thing](#vision-design-look), six moods you can try on
 - [How a drop shows on the map](#vision-design-drop), next to the rings
 - [The secret-show invite card](#vision-design-invite), under the band account
 - [The first screen](#vision-design-first), after the walk

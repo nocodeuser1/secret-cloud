@@ -41,6 +41,8 @@ node dev/build-page.mjs && node dev/render-check.mjs
 
 Every build also stamps the page: a short hash of the sources goes in `<meta name="sc-build">`, on every asset URL as `?v=`, and in `version.json`. After a deploy, pages already open notice the new `version.json` and reload themselves, so everyone reads the current plan. `render-check.mjs` fails if the stamp is stale, so rebuild after any change to the stamped files.
 
+The floating contents nav (a timeline rail at the left edge on wide screens, a Contents tab and sheet on phones) is built from the same JSON: every section, plus its h3 headings, design calls, phases, trail ideas and questions, so new ones appear on the next build. Those elements carry an `id` equal to their block id, and `render-check.mjs` fails if any contents link has no target.
+
 Keep every block `id` as it is; notes are anchored to them. Add new paragraphs with new ids. Layout and microcopy (diagram labels, captions, stance titles) live in `dev/build-page.mjs`. Mirror copy changes in `content/PLAN.md`.
 
 ## Local preview

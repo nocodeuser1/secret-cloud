@@ -208,6 +208,33 @@ for (const m of html.matchAll(/data-mood="([^"]+)"/g)) if (!moodKeys.has(m[1])) 
 for (const id of [...html.matchAll(/<a href="#([^"]+)"/g)].map((m) => m[1])) {
   if (!new RegExp(`\\bid="${id}"`).test(html)) fail(`link to #${id} has no target`);
 }
+// ---- plan contents nav: one landmark, every section and subsection linked in
+// page order, every link lands on exactly one element, one tick per link
+const reEscId = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const SUB_TYPES = new Set(["h3", "design", "phase", "idea", "question"]);
+const navWant = plan.sections.flatMap((s) => [s.id, ...s.blocks.filter((b) => SUB_TYPES.has(b.type)).map((b) => b.id)]);
+const pnavOpen = '<nav class="pnav" id="pnav" aria-label="Plan contents">';
+once(pnavOpen, "plan contents nav landmark");
+const pnavAt = html.indexOf(pnavOpen);
+let pnavLinks = [];
+if (pnavAt > -1) {
+  const pnavHtml = html.slice(pnavAt, html.indexOf("</nav>", pnavAt));
+  pnavLinks = [...pnavHtml.matchAll(/<a class="pnav-link[^"]*" href="#([^"]+)"/g)].map((m) => m[1]);
+  for (const id of pnavLinks) {
+    const n = (html.match(new RegExp(`\\sid="${reEscId(id)}"`, "g")) || []).length;
+    if (n !== 1) fail(`contents link #${id} has ${n} targets (want exactly 1)`);
+  }
+  if (pnavLinks.join(" ") !== navWant.join(" ")) {
+    const missing = navWant.filter((id) => !pnavLinks.includes(id));
+    const extra = pnavLinks.filter((id) => !navWant.includes(id));
+    fail(`contents nav links differ from plan order${missing.length ? `; missing ${missing.join(", ")}` : ""}${extra.length ? `; extra ${extra.join(", ")}` : ""}`);
+  }
+  const ticks = [...pnavHtml.matchAll(/<span class="pnav-tick [^"]*" data-for="([^"]+)"><\/span>/g)].map((m) => m[1]);
+  if (ticks.join(" ") !== navWant.join(" ")) fail("contents nav timeline ticks do not match its links one for one");
+  if (!/<button type="button" class="pnav-toggle" id="pnav-toggle" aria-expanded="false" aria-controls="pnav-panel">/.test(pnavHtml)) fail("contents toggle needs aria-expanded and aria-controls=pnav-panel");
+  if (!/<div class="pnav-panel" id="pnav-panel">/.test(pnavHtml)) fail("contents panel #pnav-panel missing");
+  if (/<h[1-6]\b/.test(pnavHtml)) fail("the contents nav must not add headings to the outline");
+}
 once('<div class="mood-chip" id="mood-chip" hidden>', "mood preview chip");
 if (!html.includes("Back to the original")) fail("mood chip lacks Back to the original");
 once('<button type="button" class="mood-scheme-btn" data-scheme="light" aria-pressed="false">Light</button>', "chip Light switch");
@@ -315,6 +342,7 @@ notes.push(`${stances.length} stance ids in plan.json, ${foundStances.size} dist
 notes.push(`${plan.sections.length} sections, ${copyChecked} copy fields checked verbatim, ${levels.length} headings in order`);
 notes.push(`${stances.filter((s) => s.design).length} design stances across ${plan.sections.flatMap((s) => s.blocks).filter((b) => b.type === "design").length} design calls, moods: ${[...moodKeys].join(", ")}`);
 notes.push(`${phonePairs} phone pairs (light and dark) on the design options`);
+notes.push(`contents nav: ${pnavLinks.length} links (${plan.sections.length} sections, ${pnavLinks.length - plan.sections.length} subsections), every one lands`);
 notes.push(`contrast on bg/surface, text needs 4.5:\n      ${contrastRows.join("\n      ")}`);
 notes.push(`build ${metaBuild} (sources hash to ${BUILD_NOW}, version.json says ${fileBuild})`);
 for (const n of notes) console.log("  " + n);

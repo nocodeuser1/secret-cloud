@@ -256,7 +256,7 @@ function renderBlock(b, ctx) {
       return `<p data-block="${b.id}">${b.html}</p>`;
 
     case "h3": {
-      let out = `<h3 data-block="${b.id}">${esc(b.text)}</h3>`;
+      let out = `<h3 id="${b.id}" data-block="${b.id}">${esc(b.text)}</h3>`;
       if (b.stance) out += `\n${stance(b.stance, b.stanceTitle || b.text)}`;
       if (b.id === LEAVE_HEADING_ID) ctx.afterLeaveHeading = true;
       return out;
@@ -285,7 +285,7 @@ function renderBlock(b, ctx) {
       const H = ctx.afterLeaveHeading ? "h4" : "h3";
       const leave = b.leaveAlone;
       const sizeWord = SIZE_WORD[b.size] || "";
-      return `<article class="idea${leave ? " idea-leave" : ""}" data-block="${b.id}">
+      return `<article class="idea${leave ? " idea-leave" : ""}" id="${b.id}" data-block="${b.id}">
   <span class="idea-letter">${esc(b.letter)}</span>
   <div class="idea-main">
     <div class="idea-head">
@@ -299,7 +299,7 @@ function renderBlock(b, ctx) {
     }
 
     case "phase":
-      return `<article class="phase" data-block="${b.id}">
+      return `<article class="phase" id="${b.id}" data-block="${b.id}">
   <span class="phase-n">${b.n}</span>
   <div class="phase-main">
     <div class="phase-head">
@@ -321,7 +321,7 @@ function renderBlock(b, ctx) {
       return renderDesign(b);
 
     case "question":
-      return `<li class="q" data-block="${b.id}">
+      return `<li class="q" id="${b.id}" data-block="${b.id}">
   <span class="q-n">${String(b.n).padStart(2, "0")}</span>
   <div class="q-main">
     <p class="q-text">${b.html}</p>
@@ -387,6 +387,95 @@ ${renderBlocks(s)}`;
 
 const meta = plan.meta;
 const navItems = plan.nav.map((n) => `<li><a href="#${n.id}">${esc(n.label)}</a></li>`).join("\n        ");
+
+// ---------------------------------------------------------------- plan contents
+// The floating contents nav: a rail with a scroll timeline on wide screens, a
+// hanging "Contents" tab and a sheet on phones. It is drawn from plan.sections,
+// so a new section or subsection shows up on the next build. Subsections are the
+// h3 headings, the design calls, the phases, and the trail ideas and questions
+// (those two as compact lettered and numbered chips). Every target carries an id
+// equal to its data-block id; dev/render-check.mjs checks each link lands.
+
+const NAV_LABEL = Object.fromEntries(plan.nav.map((n) => [n.id, n.label]));
+const pad2 = (n) => String(n).padStart(2, "0");
+// a question's accessible name: "Question 3: Should a show's reward be ..."
+const clip = (text, max) => {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(" ")) + "…";
+};
+
+function navSubs(s) {
+  const subs = [];
+  for (const b of s.blocks) {
+    if (b.type === "h3") subs.push({ id: b.id, kind: "h3", label: b.text, now: b.text });
+    else if (b.type === "design") subs.push({ id: b.id, kind: "design", label: b.short, now: `Call: ${b.short}` });
+    else if (b.type === "phase") subs.push({ id: b.id, kind: "phase", key: String(b.n), label: b.title, now: `Phase ${b.n}: ${b.title}` });
+    else if (b.type === "idea") subs.push({ id: b.id, kind: "chip", leave: !!b.leaveAlone, key: b.letter, label: `Trail ${b.letter}: ${b.title}`, tip: b.title, now: `Trail ${b.letter}: ${b.title}` });
+    else if (b.type === "question") {
+      const q = plain(b.html);
+      subs.push({ id: b.id, kind: "chip", key: pad2(b.n), label: `Question ${b.n}: ${clip(q, 70)}`, tip: q, now: `Question ${b.n}` });
+    }
+  }
+  return subs;
+}
+
+const NAV = plan.sections.map((s, i) => ({
+  id: s.id,
+  n: pad2(i + 1),
+  label: NAV_LABEL[s.id] || plain(s.title),
+  subs: navSubs(s),
+}));
+
+function navSubList(subs) {
+  const out = [];
+  let chips = null;
+  const flush = () => {
+    if (!chips) return;
+    out.push(`<li class="pnav-chips"><ul class="pnav-chiprow">${chips.join("")}</ul><p class="pnav-chipnow" aria-hidden="true"></p></li>`);
+    chips = null;
+  };
+  for (const x of subs) {
+    const now = ` data-now="${esc(x.now)}"`;
+    if (x.kind === "chip") {
+      chips = chips || [];
+      chips.push(`<li><a class="pnav-link pnav-chip${x.leave ? " pnav-chip-leave" : ""}" href="#${x.id}"${now} title="${esc(x.tip)}"><span class="pnav-key" aria-hidden="true">${esc(x.key)}</span><span class="vh">${esc(x.label)}</span></a></li>`);
+      continue;
+    }
+    flush();
+    const key = x.kind === "phase" ? `<span class="pnav-key">${esc(x.key)}</span>`
+      : x.kind === "design" ? `<span class="pnav-tag">Call</span>` : "";
+    out.push(`<li><a class="pnav-link pnav-link-sub pnav-${x.kind}" href="#${x.id}"${now}>${key}<span class="pnav-label">${esc(x.label)}</span></a></li>`);
+  }
+  flush();
+  return out.length ? `\n        <ul class="pnav-subs">\n          ${out.join("\n          ")}\n        </ul>` : "";
+}
+
+const CHEVRON = `<svg class="pnav-chev" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 L6 8 L9.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const PLAN_NAV = `<nav class="pnav" id="pnav" aria-label="Plan contents">
+  <div class="pnav-scrim" id="pnav-scrim" hidden></div>
+  <button type="button" class="pnav-toggle" id="pnav-toggle" aria-expanded="false" aria-controls="pnav-panel">
+    <span class="pnav-toggle-n" aria-hidden="true">00</span>
+    <span class="pnav-toggle-text"><span class="pnav-toggle-k">Contents</span><span class="pnav-now"><span class="pnav-now-sec">Start</span><span class="pnav-now-sub"></span></span></span>
+    ${CHEVRON}
+  </button>
+  <div class="pnav-track" aria-hidden="true">
+    <span class="pnav-line"></span>
+    <span class="pnav-fill"></span>
+    ${NAV.flatMap((s) => [`<span class="pnav-tick pnav-tick-sec" data-for="${s.id}"></span>`,
+      ...s.subs.map((x) => `<span class="pnav-tick pnav-tick-sub" data-for="${x.id}"></span>`)]).join("\n    ")}
+    <span class="pnav-dot"></span>
+  </div>
+  <div class="pnav-panel" id="pnav-panel">
+    <div class="pnav-card">
+      <p class="pnav-head"><span>Contents</span><span class="pnav-pct"><span class="pnav-pct-n">0</span>% read</span></p>
+      <ol class="pnav-list">
+${NAV.map((s) => `        <li class="pnav-sec" data-pnav-sec="${s.id}"><a class="pnav-link pnav-link-sec" href="#${s.id}" data-now="${esc(s.label)}"><span class="pnav-key" aria-hidden="true">${s.n}</span><span class="pnav-label">${esc(s.label)}</span></a>${navSubList(s.subs)}</li>`).join("\n")}
+      </ol>
+    </div>
+  </div>
+</nav>`;
 
 const symbols = `<svg class="defs" aria-hidden="true" focusable="false">
   <symbol id="rings-sym" viewBox="0 0 48 48">
@@ -466,23 +555,295 @@ const PAGE_SCRIPT = `(function () {
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
 
-  var nav = document.querySelector(".bar-nav");
-  if (!nav) return;
-  nav.addEventListener("click", function (e) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
-    var id = a ? a.getAttribute("href").slice(1) : "";
+  // One jump for the top bar links and the contents nav: short hops glide,
+  // long ones are instant, and the hash changes without a second jump.
+  function reduced() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function jumpTo(id) {
     var target = id ? document.getElementById(id) : null;
-    if (!target) return;
-    e.preventDefault();
-    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!target) return false;
     var near = Math.abs(target.getBoundingClientRect().top) < 3 * window.innerHeight;
     if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
     try { target.focus({ preventScroll: true }); } catch (err) { /* focus is a courtesy */ }
     // "auto" is an instant jump: the page sets no scroll-behavior
-    target.scrollIntoView({ behavior: near && !still ? "smooth" : "auto", block: "start" });
+    target.scrollIntoView({ behavior: near && !reduced() ? "smooth" : "auto", block: "start" });
     if (location.hash !== "#" + id) history.pushState(null, "", location.href.split("#")[0] + "#" + id);
+    return true;
+  }
+  function hashLink(e, box) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return null;
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    return a && box.contains(a) ? a : null;
+  }
+
+  var barNav = document.querySelector(".bar-nav");
+  if (barNav) {
+    barNav.addEventListener("click", function (e) {
+      var a = hashLink(e, barNav);
+      if (a && jumpTo(a.getAttribute("href").slice(1))) e.preventDefault();
+    });
+  }
+
+  // ------------------------------------------------------------ plan contents
+  // Tracks where the reader is (a requestAnimationFrame-throttled scroll
+  // handler over cached positions), fills the timeline, marks the current
+  // section and subsection with aria-current here and in the top bar, and runs
+  // the rail (hover or focus opens it) and the phone sheet (tap opens it,
+  // Escape, the scrim or a jump closes it, page scroll locked meanwhile).
+  var pnav = document.getElementById("pnav");
+  if (!pnav) return;
+  var root = document.documentElement;
+  var bar = document.querySelector(".bar");
+  var toggle = document.getElementById("pnav-toggle");
+  var panel = document.getElementById("pnav-panel");
+  var scrim = document.getElementById("pnav-scrim");
+  var nowN = pnav.querySelector(".pnav-toggle-n");
+  var nowSec = pnav.querySelector(".pnav-now-sec");
+  var nowSub = pnav.querySelector(".pnav-now-sub");
+  var pct = pnav.querySelector(".pnav-pct-n");
+  var wide = window.matchMedia ? window.matchMedia("(min-width: 900px)") : { matches: true };
+  var barLinks = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.bar-nav a[href^="#"]'), function (a) {
+    barLinks[a.getAttribute("href").slice(1)] = a;
   });
+
+  var sections = [];
+  var items = [];
+  Array.prototype.forEach.call(panel.querySelectorAll(".pnav-sec"), function (li, i) {
+    var link = li.querySelector(".pnav-link-sec");
+    var id = li.getAttribute("data-pnav-sec");
+    var sec = { id: id, n: link.querySelector(".pnav-key").textContent, label: link.getAttribute("data-now"), li: li, link: link, el: document.getElementById(id), subs: [], top: 0 };
+    sec.tick = pnav.querySelector('.pnav-tick[data-for="' + id + '"]');
+    Array.prototype.forEach.call(li.querySelectorAll(".pnav-subs a.pnav-link"), function (a) {
+      var sid = a.getAttribute("href").slice(1);
+      var group = a.closest(".pnav-chips");
+      sec.subs.push({ id: sid, link: a, now: a.getAttribute("data-now"), el: document.getElementById(sid), top: 0,
+        tick: pnav.querySelector('.pnav-tick[data-for="' + sid + '"]'),
+        chipNow: group ? group.querySelector(".pnav-chipnow") : null,
+        key: (a.querySelector(".pnav-key") || a).textContent,
+        tip: a.getAttribute("title") || "" });
+    });
+    sections.push(sec);
+    items.push(sec);
+    items = items.concat(sec.subs);
+  });
+  items = items.filter(function (it) { return !!it.el; });
+
+  var line = 120;
+  var maxScroll = 1;
+  var cur = { sec: null, sub: null, pct: -1, y: 0, compact: false };
+
+  function measure() {
+    var barBottom = bar ? Math.max(0, Math.round(bar.getBoundingClientRect().bottom)) : 0;
+    root.style.setProperty("--pnav-top", barBottom + "px");
+    var y = window.scrollY || window.pageYOffset || 0;
+    items.forEach(function (it) { it.top = it.el.getBoundingClientRect().top + y; });
+    maxScroll = Math.max(1, root.scrollHeight - window.innerHeight);
+    // the reading line sits a little under where a jump lands a target
+    var first = sections.length && sections[0].el;
+    var margin = first ? parseFloat(getComputedStyle(first).scrollMarginTop) || 0 : 0;
+    // a jump lands a target above this line, and a heading in the top third
+    // of the window already counts as here; ticks sit on the same line so the
+    // marker crosses each one as it lights up
+    line = Math.max(Math.max(barBottom, margin) + 48, Math.round(window.innerHeight * 0.33));
+    items.forEach(function (it) {
+      if (!it.tick) return;
+      var f = Math.min(1, Math.max(0, (it.top - line) / maxScroll));
+      it.tick.style.setProperty("--at", f.toFixed(4));
+    });
+  }
+
+  function mark(link, on) {
+    if (on) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  }
+
+  function keepInBar(a) {
+    var box = a.closest(".bar-nav");
+    if (!box || box.scrollWidth <= box.clientWidth + 1) return;
+    var b = box.getBoundingClientRect();
+    var r = a.getBoundingClientRect();
+    if (r.left < b.left + 24) box.scrollLeft += r.left - b.left - 24;
+    else if (r.right > b.right - 24) box.scrollLeft += r.right - b.right + 24;
+  }
+
+  function locate() {
+    var y = window.scrollY || window.pageYOffset || 0;
+    var vh = window.innerHeight;
+    var p = Math.min(1, Math.max(0, y / maxScroll));
+    var atBottom = y >= maxScroll - 2;
+    var probe = y + line;
+    var sec = null;
+    var sub = null;
+    sections.forEach(function (s) {
+      if (!s.el) return;
+      // at the very bottom a short last section still gets its turn
+      if (s.top <= probe || (atBottom && s.top < y + vh - 40)) sec = s;
+    });
+    if (sec) sec.subs.forEach(function (x) { if (x.el && x.top <= probe) sub = x; });
+
+    pnav.style.setProperty("--p", p.toFixed(4));
+    // phones: fold the tab while reading downward past the opening, unfold on the way up
+    var compact = cur.compact;
+    if (wide.matches || y < (sections[0] && sections[0].top ? sections[0].top - line : vh)) compact = false;
+    else if (y > cur.y + 6) compact = true;
+    else if (y < cur.y - 6) compact = false;
+    if (Math.abs(y - cur.y) > 6 || !compact) cur.y = y;
+    if (compact !== cur.compact) { cur.compact = compact; pnav.classList.toggle("is-compact", compact); }
+    var whole = Math.round(p * 100);
+    if (whole !== cur.pct) { cur.pct = whole; pct.textContent = String(whole); }
+    items.forEach(function (it) {
+      if (it.tick) it.tick.classList.toggle("is-past", it.top <= probe || (atBottom && it === sec));
+    });
+    if (sec === cur.sec && sub === cur.sub) return;
+
+    if (cur.sec !== sec) {
+      sections.forEach(function (s) {
+        var on = s === sec;
+        s.li.classList.toggle("is-current", on);
+        mark(s.link, on);
+        if (s.tick) s.tick.classList.toggle("is-current", on);
+        if (barLinks[s.id]) mark(barLinks[s.id], on);
+      });
+      if (sec && barLinks[sec.id]) keepInBar(barLinks[sec.id]);
+      nowN.textContent = sec ? sec.n : "00";
+      nowSec.textContent = sec ? sec.label : "Start";
+    }
+    sections.forEach(function (s) {
+      s.subs.forEach(function (x) {
+        mark(x.link, x === sub);
+        if (x.tick) x.tick.classList.toggle("is-current", x === sub);
+        if (x.chipNow && x === sub) x.chipNow.textContent = x.key + " · " + x.tip;
+      });
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll(".pnav-chipnow"), function (el) {
+      if (!sub || sub.chipNow !== el) el.textContent = "";
+    });
+    nowSub.textContent = sub ? sub.now : "";
+    cur.sec = sec;
+    cur.sub = sub;
+  }
+
+  var raf = 0;
+  var dirty = true;
+  function frame() {
+    raf = 0;
+    if (dirty) { dirty = false; measure(); }
+    locate();
+  }
+  function schedule(remeasure) {
+    if (remeasure) dirty = true;
+    if (!raf) raf = window.requestAnimationFrame(frame);
+  }
+  window.addEventListener("scroll", function () { schedule(false); }, { passive: true });
+  window.addEventListener("resize", function () { schedule(true); });
+  window.addEventListener("load", function () { schedule(true); });
+  if (window.ResizeObserver) {
+    var watch = new ResizeObserver(function () { schedule(true); });
+    var main = document.getElementById("main");
+    if (main) watch.observe(main);
+    if (bar) watch.observe(bar);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { schedule(true); });
+
+  // open and closed: hover or focus opens the rail, a press pins or shuts it;
+  // on phones only a press opens the sheet
+  var st = { hover: false, focus: false, pinned: false, shut: false, left: false };
+  var leaveTimer = 0;
+  var locked = false;
+  function isOpen() {
+    if (!wide.matches) return st.pinned;
+    return !st.shut && (st.pinned || st.hover || st.focus);
+  }
+  function lock(on) {
+    if (on === locked) return;
+    locked = on;
+    root.classList.toggle("pnav-lock", on);
+  }
+  function render() {
+    var open = isOpen();
+    pnav.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    var sheet = open && !wide.matches;
+    scrim.hidden = !sheet;
+    lock(sheet);
+  }
+  function close() {
+    st.pinned = false;
+    st.shut = true;
+    render();
+  }
+  pnav.classList.add("pnav-js");
+  toggle.addEventListener("click", function () {
+    if (isOpen()) { close(); return; }
+    st.pinned = true;
+    st.shut = false;
+    render();
+    if (!wide.matches) {
+      var here = panel.querySelector('.pnav-subs a[aria-current]') || panel.querySelector('a[aria-current]');
+      var first = here || panel.querySelector("a.pnav-link");
+      if (here && here.scrollIntoView) here.scrollIntoView({ block: "center" });
+      if (first) { try { first.focus({ preventScroll: true }); } catch (err) { first.focus(); } }
+    }
+  });
+  pnav.addEventListener("mouseenter", function () {
+    window.clearTimeout(leaveTimer);
+    // back on the rail after leaving it: a press that shut it no longer holds
+    if (st.left && !st.focus) st.shut = false;
+    st.left = false;
+    st.hover = true;
+    render();
+  });
+  pnav.addEventListener("mouseleave", function () {
+    window.clearTimeout(leaveTimer);
+    st.left = true;
+    leaveTimer = window.setTimeout(function () {
+      st.hover = false;
+      if (!st.focus) st.shut = false;
+      render();
+    }, 240);
+  });
+  pnav.addEventListener("focusin", function () {
+    // arriving from outside opens it again, even after a press shut it
+    if (!st.focus) st.shut = false;
+    st.focus = true;
+    render();
+  });
+  pnav.addEventListener("focusout", function () {
+    window.setTimeout(function () {
+      if (pnav.contains(document.activeElement)) return;
+      st.focus = false;
+      if (!st.hover) st.shut = false;
+      // a phone sheet closes when focus leaves it
+      if (!wide.matches) st.pinned = false;
+      render();
+    }, 0);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || !isOpen()) return;
+    var inside = pnav.contains(document.activeElement);
+    close();
+    if (inside || !wide.matches) toggle.focus();
+  });
+  scrim.addEventListener("click", close);
+  scrim.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+  panel.addEventListener("click", function (e) {
+    var a = hashLink(e, panel);
+    if (!a) return;
+    close();
+    if (jumpTo(a.getAttribute("href").slice(1))) e.preventDefault();
+  });
+  function onMode() {
+    st.pinned = false;
+    st.shut = false;
+    st.hover = false;
+    render();
+    schedule(true);
+  }
+  if (wide.addEventListener) wide.addEventListener("change", onMode);
+  else if (wide.addListener) wide.addListener(onMode);
+  render();
+  measure();
+  locate();
 })();`;
 
 // ---------------------------------------------------------------- mood preview
@@ -649,6 +1010,7 @@ ${symbols}
     </nav>
     <div id="review-identity"></div>
   </div>
+  ${PLAN_NAV.split("\n").join("\n  ")}
 
   <main id="main">
     <div class="hero">
